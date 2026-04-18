@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spell It</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f4f0;--surface:#ffffff;--border:#e0dfd8;--border2:#c8c7be;--text:#1a1a18;--muted:#888880;--faint:#b8b7b0;--success:#2a7a4a;--danger:#b03030;--warn:#8a6020;--r:6px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;-webkit-font-smoothing:antialiased;}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;}
+.logo{font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.95rem;letter-spacing:-.01em;}
+.nav-right{display:flex;align-items:center;gap:8px;position:relative;}
+.nav-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:var(--r);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;transition:all .15s;}
+.nav-btn:hover{border-color:var(--border2);color:var(--text);}
+.dd{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;min-width:160px;z-index:200;display:none;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,.08);}
+.dd.open{display:flex;}
+.dd-item{padding:10px 12px;border-radius:4px;cursor:pointer;font-size:13px;transition:background .1s;}
+.dd-item:hover{background:var(--bg);}
+.wrap{flex:1;padding:2rem 1.25rem;max-width:480px;width:100%;margin:0 auto;}
+.wrap-c{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.home-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2rem;}
+.home-title{font-family:'IBM Plex Mono',monospace;font-size:clamp(2.2rem,9vw,3.5rem);font-weight:500;line-height:1.05;letter-spacing:-.03em;margin-bottom:2.5rem;}
+.home-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:280px;}
+.btn-p{background:var(--text);color:var(--bg);border:none;padding:14px 20px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity .15s;width:100%;}
+.btn-p:hover{opacity:.85;}
+.btn-s{background:transparent;color:var(--text);border:1px solid var(--border);padding:14px 20px;border-radius:var(--r);font-size:14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;width:100%;}
+.btn-s:hover{border-color:var(--border2);}
+.stats-row{display:flex;border-top:1px solid var(--border);margin-top:auto;}
+.stat{flex:1;padding:1.25rem;text-align:center;border-right:1px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:500;}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em;}
+.sh{margin-bottom:1.5rem;}
+.sh-title{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:500;letter-spacing:-.02em;}
+.sh-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.game-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.game-row{background:var(--surface);padding:1.25rem;cursor:pointer;transition:background .1s;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.game-row:hover{background:var(--bg);}
+.gr-left{display:flex;align-items:center;gap:12px;}
+.gr-icon{font-size:1rem;width:20px;text-align:center;color:var(--muted);}
+.gr-name{font-weight:500;font-size:14px;}
+.gr-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.gr-arrow{color:var(--faint);font-size:12px;}
+.overlay{position:fixed;inset:0;background:rgba(245,244,240,.88);backdrop-filter:blur(2px);z-index:300;display:none;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.popup{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--text);padding:1.5rem 1.25rem;width:100%;max-width:480px;border-radius:var(--r) var(--r) 0 0;}
+.popup-title{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:500;margin-bottom:4px;}
+.popup-sub{font-size:12px;color:var(--muted);margin-bottom:1.25rem;}
+.diff-list{display:flex;flex-direction:column;gap:6px;}
+.diff-row{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;background:var(--bg);transition:all .15s;}
+.diff-row:hover{border-color:var(--text);}
+.diff-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.game-wrap{flex:1;padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:1.25rem;max-width:480px;width:100%;margin:0 auto;}
+.prog{height:2px;background:var(--border);border-radius:1px;}
+.prog-fill{height:100%;background:var(--text);border-radius:1px;transition:width .4s;}
+.prog-label{font-size:11px;color:var(--muted);text-align:right;margin-top:4px;font-family:'IBM Plex Mono',monospace;}
+.words-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+.wchip{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:'IBM Plex Mono',monospace;font-size:1rem;text-align:center;}
+.timer-block{text-align:center;padding:1rem 0;}
+.timer-n{font-family:'IBM Plex Mono',monospace;font-size:3rem;font-weight:500;line-height:1;}
+.timer-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;}
+.respell-inputs{display:flex;flex-direction:column;gap:6px;}
+.ri-row{display:flex;align-items:center;gap:10px;}
+.ri-num{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--faint);min-width:18px;text-align:right;}
+.ri{flex:1;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 12px;border-radius:var(--r);font-size:14px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .15s;}
+.ri:focus{border-color:var(--text);}
+.ri.ok{border-color:var(--success);background:#f0faf4;}
+.ri.err{border-color:var(--danger);background:#fdf0f0;}
+.listen-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:2rem 1.5rem;text-align:center;display:flex;flex-direction:column;align-items:center;gap:1.25rem;}
+.wnum{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.wmean{font-size:13px;color:var(--muted);line-height:1.6;font-style:italic;max-width:260px;}
+.speak-btn{background:none;border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:100px;font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:all .15s;}
+.speak-btn:hover{border-color:var(--text);}
+.spell-in{width:100%;max-width:280px;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:14px;border-radius:var(--r);font-size:1rem;font-family:'IBM Plex Mono',monospace;text-align:center;letter-spacing:.06em;outline:none;transition:border-color .15s;}
+.spell-in:focus{border-color:var(--text);}
+.listen-btns{display:flex;gap:8px;width:100%;max-width:280px;}
+.btn-skip{flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:var(--r);font-size:13px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
+.btn-skip:hover{border-color:var(--border2);color:var(--text);}
+.btn-next{flex:2;background:var(--text);border:none;color:var(--bg);padding:12px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity .15s;}
+.btn-next:hover{opacity:.8;}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem;text-align:center;}
+.sc-n{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:500;}
+.sc-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.sc.ok .sc-n{color:var(--success);}
+.sc.err .sc-n{color:var(--danger);}
+.sc.sk .sc-n{color:var(--warn);}
+.wrong-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.wl-head{padding:10px 14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);}
+.wl-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-family:'IBM Plex Mono',monospace;}
+.wl-row:last-child{border-bottom:none;}
+.wl-y{color:var(--danger);}
+.wl-c{color:var(--success);}
+.wl-s{color:var(--faint);}
+.acc-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem;text-align:center;}
+.acc-n{font-family:'IBM Plex Mono',monospace;font-size:2.5rem;font-weight:500;}
+.acc-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+.res-btns{display:flex;flex-direction:column;gap:8px;}
+.topic-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.topic-row{background:var(--surface);padding:1.25rem;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;transition:background .1s;font-size:14px;line-height:1.5;}
+.topic-row:hover{background:var(--bg);}
+.ta{width:100%;min-height:200px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:1rem;border-radius:var(--r);font-size:14px;font-family:'IBM Plex Sans',sans-serif;line-height:1.7;resize:none;outline:none;transition:border-color .15s;}
+.ta:focus{border-color:var(--text);}
+.wc-badge{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);padding:4px 10px;border:1px solid var(--border);border-radius:100px;}
+.wc-badge.ok{color:var(--success);border-color:var(--success);}
+.ea{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.ea-head{padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.ea-scores{display:grid;grid-template-columns:repeat(3,1fr);}
+.ea-sc{padding:1rem;text-align:center;border-right:1px solid var(--border);}
+.ea-sc:last-child{border-right:none;}
+.ea-n{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:500;}
+.ea-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:3px;}
+.sug{padding:10px 14px;border-top:1px solid var(--border);font-size:13px;color:var(--danger);display:flex;gap:8px;}
+.lib-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.lib-add{background:var(--text);color:var(--bg);border:none;padding:8px 14px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity .15s;}
+.lib-add:hover{opacity:.8;}
+.ltabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:1rem;}
+.ltabs::-webkit-scrollbar{display:none;}
+.ltab{white-space:nowrap;padding:6px 14px;border-radius:100px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:transparent;color:var(--muted);font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
+.ltab.active{background:var(--text);color:var(--bg);border-color:var(--text);}
+.art-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.art-row{background:var(--surface);padding:1rem 1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.art-title{font-size:14px;font-weight:500;line-height:1.4;margin-bottom:3px;}
+.art-meta{font-size:12px;color:var(--muted);}
+.art-btns{display:flex;gap:6px;flex-shrink:0;}
+.art-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:all .15s;}
+.art-btn:hover{border-color:var(--border2);color:var(--text);}
+.art-btn.rd{color:var(--text);border-color:var(--border2);}
+.modal-ov{position:fixed;inset:0;background:rgba(245,244,240,.88);backdrop-filter:blur(2px);z-index:400;display:none;align-items:flex-end;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--text);padding:1.5rem 1.25rem;width:100%;max-width:480px;border-radius:var(--r) var(--r) 0 0;display:flex;flex-direction:column;gap:10px;}
+.modal-title{font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:500;margin-bottom:4px;}
+.m-in{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:var(--r);font-size:14px;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color .2s;}
+.m-in:focus{border-color:var(--text);}
+.m-btns{display:flex;gap:8px;margin-top:4px;}
+.m-cancel{flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);padding:12px;border-radius:var(--r);font-size:14px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+.m-save{flex:2;background:var(--text);border:none;color:var(--bg);padding:12px;border-radius:var(--r);font-size:14px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+.hist-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.hist-row{background:var(--surface);padding:1rem 1.25rem;}
+.hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.hist-game{font-size:13px;font-weight:500;}
+.hist-date{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.hist-scores{display:flex;gap:1rem;}
+.hs{font-size:12px;color:var(--muted);}
+.hs .hn{font-weight:500;color:var(--text);}
+.hs.ok .hn{color:var(--success);}
+.hs.err .hn{color:var(--danger);}
+.notif{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;z-index:500;display:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.12);}
+.notif.show{display:block;}
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:13px;line-height:1.6;}
+.varc-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;padding:2rem;}
+</style>
+</head>
+<body>
+<div class="notif" id="notif"></div>
+
+<!-- DIFFICULTY OVERLAY -->
+<div class="overlay" id="diff-ov">
+  <div class="popup">
+    <div class="popup-title">Select difficulty</div>
+    <div class="popup-sub">Words are picked based on your level</div>
+    <div class="diff-list">
+      <div class="diff-row" onclick="startGame('easy')">Easy <span class="diff-tag">4–6 letters · 5 words</span></div>
+      <div class="diff-row" onclick="startGame('hard')">Hard <span class="diff-tag">7–10 letters · 10 words</span></div>
+      <div class="diff-row" onclick="startGame('difficult')">Difficult <span class="diff-tag">11+ letters · 10 words</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ARTICLE MODAL -->
+<div class="modal-ov" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">Add article</div>
+    <input class="m-in" id="m-url" placeholder="Article URL" type="url">
+    <input class="m-in" id="m-title" placeholder="Title (optional)">
+    <input class="m-in" id="m-list" placeholder="List name (e.g. To revisit)">
+    <div class="m-btns">
+      <button class="m-cancel" onclick="closeModal()">Cancel</button>
+      <button class="m-save" onclick="saveArticle()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="home">
+  <nav>
+    <div class="logo">spell—it</div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="toggleDD()">menu</button>
+      <div class="dd" id="dd">
+        <div class="dd-item" onclick="nav('varc')">VARC PYQ</div>
+        <div class="dd-item" onclick="nav('library')">Library</div>
+        <div class="dd-item" onclick="nav('analysis')">Analysis</div>
+      </div>
+    </div>
+  </nav>
+  <div class="wrap wrap-c" style="gap:0">
+    <div class="home-label">CAT VARC prep</div>
+    <div class="home-title">Master<br>every<br>word.</div>
+    <div class="home-btns">
+      <button class="btn-p" onclick="nav('choose-game')">Start test</button>
+      <button class="btn-s" onclick="nav('library')">Read article</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-n" id="s-l">0</div><div class="stat-l">Learned</div></div>
+    <div class="stat"><div class="stat-n" id="s-s">0</div><div class="stat-l">Sessions</div></div>
+    <div class="stat"><div class="stat-n" id="s-a">—</div><div class="stat-l">Accuracy</div></div>
+  </div>
+</div>
+
+<!-- CHOOSE GAME -->
+<div class="screen" id="choose-game">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← back</button></nav>
+  <div class="wrap">
+    <div class="sh"><div class="sh-title">Choose game</div><div class="sh-sub">Pick how you want to practice</div></div>
+    <div class="game-list">
+      <div class="game-row" onclick="openDiff('respell')">
+        <div class="gr-left"><div class="gr-icon">◉</div><div><div class="gr-name">Re-Spell</div><div class="gr-desc">See words, then spell from memory</div></div></div>
+        <div class="gr-arrow">→</div>
+      </div>
+      <div class="game-row" onclick="openDiff('listen')">
+        <div class="gr-left"><div class="gr-icon">◎</div><div><div class="gr-name">Listen & Spell</div><div class="gr-desc">Hear the word, type the spelling</div></div></div>
+        <div class="gr-arrow">→</div>
+      </div>
+      <div class="game-row" onclick="nav('essay-game')">
+        <div class="gr-left"><div class="gr-icon">○</div><div><div class="gr-name">Essay Practice</div><div class="gr-desc">Write 150 words, get feedback</div></div></div>
+        <div class="gr-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESPELL -->
+<div class="screen" id="respell-game">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('choose-game')">✕ quit</button></nav>
+  <div class="game-wrap" id="respell-area"></div>
+</div>
+
+<!-- LISTEN -->
+<div class="screen" id="listen-game">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('choose-game')">✕ quit</button></nav>
+  <div class="game-wrap" id="listen-area"></div>
+</div>
+
+<!-- ESSAY -->
+<div class="screen" id="essay-game">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('choose-game')">← back</button></nav>
+  <div class="game-wrap" id="essay-area"></div>
+</div>
+
+<!-- LIBRARY -->
+<div class="screen" id="library">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
+  <div class="wrap">
+    <div class="lib-header"><div class="sh-title">Library</div><button class="lib-add" onclick="openModal()">+ add</button></div>
+    <div class="ltabs" id="ltabs"></div>
+    <div id="art-list-wrap"></div>
+  </div>
+</div>
+
+<!-- READ -->
+<div class="screen" id="read-article">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('library')">← library</button></nav>
+  <div class="wrap" id="read-content"></div>
+</div>
+
+<!-- VARC -->
+<div class="screen" id="varc">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
+  <div class="varc-wrap">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">VARC PYQ</div>
+    <div class="sh-title" style="font-size:1.1rem">CAT Previous Year Papers</div>
+    <p style="color:var(--muted);font-size:13px;max-width:260px;line-height:1.6">Access all CAT VARC question papers on the 2IIM archive.</p>
+    <button class="btn-p" style="max-width:260px" onclick="window.open('https://online.2iim.com/CAT-question-paper/','_blank')">Open question papers →</button>
+    <button class="btn-s" style="max-width:260px;margin-top:4px" onclick="nav('home')">Go back</button>
+  </div>
+</div>
+
+<!-- ANALYSIS -->
+<div class="screen" id="analysis">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
+  <div class="wrap">
+    <div class="sh"><div class="sh-title">Analysis</div><div class="sh-sub">Your performance history</div></div>
+    <div id="analysis-content"></div>
+  </div>
+</div>
+
+<script>
+let wordBank={easy:[],hard:[],difficult:[]};
+let currentGame='',currentDiff='',currentWords=[];
+let rTimer=null,pendingGame='';
+let listenIdx=0,listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
+let activeList='All';
+const WORDS_URL='https://raw.githubusercontent.com/deva-rasai/spell-it/main/words.json';
+const TOPICS=["Is social media making us more lonely or more connected?","Should school exams be replaced with continuous assessments?","The role of books in the age of the internet","Is ambition a virtue or a source of unhappiness?","How technology is changing the way we communicate","Should cities ban private cars to reduce pollution?","The importance of failure in achieving success","Does modern life give us enough time to think?","Is cricket more than just a sport in India?","Should voting be made compulsory for all citizens?","The value of learning a second language","Are we too dependent on our smartphones?"];
+const FALLBACK={easy:["able","acid","aged","also","area","army","away","baby","back","ball","band","bank","base","bath","bear","beat","been","bell","best","bird","bite","blow","blue","boat","body","bone","book","born","both","bowl","burn","busy","calm","came","card","care","cart","case","cash","cast","cave","cell","chat","chin","chip","city","clay","clip","coal","coat","code","coin","cold","comb","come","cook","cool","cope","copy","cord","core","corn","cost","crew","crop","cube","cure","dark","data","days","dead","deal","dear","debt","deck","deed","deep","deny","desk","diet","dirt","disk","dock","done","door","dose","down","draw","drip","drop","drum","dual","dump","dusk","dust","duty","each","earn","ease","edge","else","epic","even","evil","exam","face","fact","fail","fall","fame","farm","fast","fate","fear","feed","feel","feet","fell","felt","file","fill","film","find","fine","fire","firm","fish","fist","five","flag","flat","flaw","flew","flip","flow","foam","fold","folk","fond","font","food","fool","foot","fore","fork","form","fort","foul","four","free","from","fuel","full","fund","fury","fuse","gain","game","gang","gate","gave","gear","germ","gift","girl","give","glad","glue","goal","gold","gone","good","grab","grew","grid","grim","grin","grip","grow","gulf","gust","half","hall","halt","hand","hang","hard","harm","hate","have","hawk","head","heal","heap","heat","heel","held","help","herb","here","hero","hide","high","hill","hint","hire","hold","hole","holy","home","hood","hook","hope","horn","host","hour","huge","hull","hunt","hurt","icon","idea","idle","inch","into","iron","item","jail","jump","just","keen","keep","kill","kind","king","knot","lack","laid","lake","land","lane","last","late","lead","leaf","lean","left","lend","lens","less","lift","like","line","link","list","live","load","loan","lock","loft","lone","long","look","loop","lore","loss","lost","loud","love","luck","lung","lure","lust","made","mail","main","make","male","mall","many","mark","mass","mast","math","meal","mean","meat","meet","melt","memo","mere","mesh","mild","mile","mill","mind","mine","mint","miss","mist","mode","mood","more","most","move","much","must","myth","nail","name","neat","need","nest","next","nice","nine","node","none","noon","norm","note","noun","oath","odds","once","only","open","oral","oven","over","pace","pack","page","paid","pain","pair","palm","pane","park","part","pass","past","path","pave","peak","peel","peer","perk","pest","pick","pier","pile","pine","pipe","plan","play","plea","plot","plug","plus","poem","poet","poll","pond","pool","poor","port","pose","post","prey","pull","pump","pure","push","race","rack","rage","rain","rank","rare","rate","read","reel","rein","rely","rent","rest","rich","ride","ring","risk","road","roam","role","roll","roof","room","root","rope","ruin","rule","rush","rust","safe","sage","sail","salt","same","sand","sank","save","scan","seal","seed","seek","self","sell","send","sent","shed","ship","shoe","shop","shot","show","sick","side","sign","silk","sing","sink","size","skin","skip","slam","slap","slim","slip","slot","slow","snap","snow","soak","sock","soft","soil","sold","sole","some","song","soot","soul","soup","span","spin","spit","spot","spur","star","stay","stem","step","stir","stop","suck","suit","sulk","sung","sunk","swap","swim","tail","tall","tank","tape","task","tend","tent","term","test","text","than","them","then","this","tide","tile","time","tire","toad","told","toll","tomb","tone","took","tool","tops","tour","town","trap","tree","trim","trip","true","tune","turn","twig","type","unit","upon","used","vary","vast","veil","vein","verb","vest","view","vile","vine","void","wade","wage","wake","walk","wall","want","ward","warm","wave","ways","weak","well","went","west","what","when","wide","wife","wild","will","wind","wine","wing","wish","with","woke","wolf","wood","wool","word","wore","work","worm","worn","wrap","yard","yell","your"],hard:["abandon","ability","absence","absolute","abstract","abundant","academic","accuracy","acoustic","activate","adequate","adjacent","admirable","adoption","advanced","advocate","affected","aggregate","agitate","ambitious","analytic","announce","apparent","appetite","applause","approach","argument","arrange","artifact","artistic","assemble","assertive","athletic","attached","attention","attitude","authentic","available","balanced","behavior","beloved","beneath","boundary","breathe","capable","capture","careful","caution","certain","charisma","chronic","clarity","classic","climate","closure","cluster","coherent","collapse","comfort","compete","complex","concept","concrete","conflict","connect","consent","contain","context","control","convert","courage","creative","crucial","culture","curious","current","decided","decline","define","deliver","demanding","depend","despite","develop","devoted","differ","dilemma","disagree","discard","discuss","dismiss","display","dispute","distant","diverse","dynamic","ecology","economy","element","embrace","emotion","enhance","enormous","ensure","entire","essence","ethical","evident","examine","example","expect","explicit","explore","express","extreme","failure","feature","feeling","fiction","finding","foreign","formal","forward","fragile","freedom","fulfill","genuine","gradual","grounded","harmful","healthy","helpful","history","however","imitate","impact","improve","include","increase","initial","insight","inspire","intense","intimate","invent","involve","justify","language","liberal","logical","loyalty","maintain","massive","meaning","message","migrate","minimal","modern","natural","network","neutral","notable","obvious","operate","organic","outcome","outline","outside","partial","passion","pattern","perfect","perform","persist","popular","possess","predict","prepare","produce","profile","promote","propose","protect","provide","publish","quality","radical","readily","reason","rebuild","reflect","refuse","relate","release","replace","require","resolve","respect","respond","reveal","reverse","review","robust","routine","satisfy","science","section","secure","segment","select","service","similar","society","solution","specific","stable","subject","support","suppose","surface","sustain","system","tension","theory","thought","thorough","through","tragic","transfer","typical","unique","useful","various","visible","vision","willing","witness"],difficult:["aberration","abominable","abstruse","acrimonious","acumen","adamant","admonish","aesthetic","aggrandize","alacrity","alienation","alliteration","ambiguity","ambivalent","ameliorate","anachronism","anecdotal","antagonism","antiquated","apocryphal","apprehension","arbitrary","articulate","aspiration","assiduous","atrocious","audacious","auspicious","authoritarian","autonomous","belligerent","benevolent","bureaucratic","camaraderie","candor","catastrophe","caustic","circumspect","clandestine","cognizant","collateral","commemorate","compulsory","conceivable","contemptuous","contentious","controversial","convergence","correlation","credulous","culmination","cumbersome","debilitating","deceptive","deference","deleterious","demagogue","deprivation","derivative","despondent","dichotomy","differentiate","diligent","discernible","discrepancy","disdainful","disillusion","disparate","dissolution","distinguish","divergent","eccentric","efficacious","elaborate","eloquence","embroiled","empirical","enigmatic","ephemeral","equivocal","exacerbate","exasperate","exhaustive","exorbitant","expeditious","exuberant","exultant","facetious","fallacious","fastidious","flamboyant","formidable","forthright","fundamental","gregarious","grotesque","hapless","heinous","hierarchy","hypocritical","iconoclast","idiomatic","impeccable","impervious","incongruent","inconsequential","incorrigible","indignant","inevitable","inexorable","inflammatory","ingenuity","innocuous","insidious","insolvent","intransigent","irrefutable","juxtaposition","laconic","languorous","meticulous","monotonous","nefarious","negligence","obstinate","ominous","ostentatious","paradoxical","paternalistic","pejorative","perfunctory","pervasive","pessimistic","philosophical","pragmatic","precarious","pretentious","prodigious","proficiency","propaganda","provocative","prudential","qualitative","reciprocal","relinquish","reminiscent","repercussion","resilience","reverence","sagacious","scandalous","skepticism","sophisticated","spontaneous","superficial","surveillance","symptomatic","systematic","temperamental","tenacious","treacherous","turbulent","unambiguous","unprecedented","vacillate","venomous","vehement","versatile","vindictive","vulnerability","whimsical"]};
+
+window.onload=async()=>{
+  loadStats();renderLib();renderAnalysis();
+  try{const r=await fetch(WORDS_URL);if(r.ok)wordBank=await r.json();}catch(e){}
+  if(!wordBank.easy.length)wordBank=FALLBACK;
+};
+
+function nav(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const t=document.getElementById(id);
+  if(t){t.classList.add('active');window.scrollTo(0,0);}
+  closeDD();
+  if(id==='library')renderLib();
+  if(id==='analysis')renderAnalysis();
+  if(id==='essay-game')initEssay();
+}
+function toggleDD(){document.getElementById('dd').classList.toggle('open');}
+function closeDD(){document.getElementById('dd').classList.remove('open');}
+document.addEventListener('click',e=>{if(!e.target.closest('.nav-right'))closeDD();});
+
+function openDiff(game){pendingGame=game;document.getElementById('diff-ov').classList.add('open');}
+function startGame(diff){
+  document.getElementById('diff-ov').classList.remove('open');
+  currentDiff=diff;currentGame=pendingGame;
+  const count=(currentGame==='respell'&&diff==='easy')?5:10;
+  const pool=wordBank[diff]||[];
+  currentWords=shuffle([...pool]).slice(0,count);
+  if(!currentWords.length){showNotif('Word bank empty');return;}
+  if(currentGame==='respell')initRespell();else initListen();
+}
+
+function initRespell(){
+  nav('respell-game');
+  let cd=20;
+  const area=document.getElementById('respell-area');
+  area.innerHTML=`<div><div class="prog"><div class="prog-fill" id="rp-bar" style="width:100%"></div></div><div class="prog-label">memorise these words</div></div><div class="words-grid" id="rp-grid"></div><div class="timer-block"><div class="timer-n" id="rp-t">20</div><div class="timer-l">seconds</div></div>`;
+  const g=document.getElementById('rp-grid');
+  currentWords.forEach(w=>{const c=document.createElement('div');c.className='wchip';c.textContent=w;g.appendChild(c);});
+  clearInterval(rTimer);
+  rTimer=setInterval(()=>{
+    cd--;
+    const te=document.getElementById('rp-t'),be=document.getElementById('rp-bar');
+    if(te)te.textContent=cd;if(be)be.style.width=(cd/20*100)+'%';
+    if(cd<=0){clearInterval(rTimer);renderRespellType();}
+  },1000);
+}
+
+function renderRespellType(){
+  const area=document.getElementById('respell-area');
+  area.innerHTML=`<div class="prog-label" style="text-align:left">now spell all ${currentWords.length} words from memory</div><div class="respell-inputs" id="rp-ins"></div><button class="btn-p" onclick="checkRespell()">Check answers</button>`;
+  const ins=document.getElementById('rp-ins');
+  currentWords.forEach((_,i)=>{const r=document.createElement('div');r.className='ri-row';r.innerHTML=`<span class="ri-num">${i+1}</span><input class="ri" id="ri-${i}" placeholder="word ${i+1}" autocomplete="off" autocorrect="off" spellcheck="false">`;ins.appendChild(r);});
+  document.getElementById('ri-0')?.focus();
+}
+
+function checkRespell(){
+  let ok=0,err=0,blank=0;const ww=[];
+  currentWords.forEach((word,i)=>{
+    const el=document.getElementById(`ri-${i}`);if(!el)return;
+    const v=el.value.trim().toLowerCase();
+    if(!v){blank++;el.classList.add('err');}
+    else if(v===word.toLowerCase()){ok++;el.classList.add('ok');}
+    else{err++;el.classList.add('err');ww.push({y:v,c:word});}
+  });
+  saveSession('Re-Spell',ok,err,blank);
+  setTimeout(()=>renderRespellRes(ok,err,blank,ww),500);
+}
+
+function renderRespellRes(ok,err,blank,ww){
+  document.getElementById('respell-area').innerHTML=`
+    <div class="sh-title">Results</div>
+    <div class="score-grid">
+      <div class="sc ok"><div class="sc-n">${ok}</div><div class="sc-l">Correct</div></div>
+      <div class="sc err"><div class="sc-n">${err}</div><div class="sc-l">Wrong</div></div>
+      <div class="sc sk"><div class="sc-n">${blank}</div><div class="sc-l">Blank</div></div>
+    </div>
+    ${ww.length?`<div class="wrong-list"><div class="wl-head">Review</div>${ww.map(w=>`<div class="wl-row"><span class="wl-y">${w.y||'—'}</span><span class="wl-s"> → </span><span class="wl-c">${w.c}</span></div>`).join('')}</div>`:`<div style="text-align:center;font-size:13px;color:var(--success);padding:1rem">All correct.</div>`}
+    <div class="res-btns"><button class="btn-p" onclick="openDiff('respell')">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
+}
+
+function initListen(){
+  nav('listen-game');
+  listenIdx=0;listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
+  renderListenWord();
+}
+
+function renderListenWord(){
+  const word=currentWords[listenIdx];
+  const isLast=listenIdx===currentWords.length-1;
+  document.getElementById('listen-area').innerHTML=`
+    <div><div class="prog"><div class="prog-fill" style="width:${(listenIdx/currentWords.length)*100}%"></div></div></div>
+    <div class="listen-card">
+      <div class="wnum">Word ${listenIdx+1} of ${currentWords.length}</div>
+      <div class="wmean">Listen carefully and type the correct spelling.</div>
+      <button class="speak-btn" onclick="speak('${word}')">▶ hear word</button>
+      <input class="spell-in" id="spell-in" placeholder="type spelling..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')submitListen()">
+      <div class="listen-btns">
+        <button class="btn-skip" onclick="skipListen()">Skip</button>
+        <button class="btn-next" onclick="submitListen()">${isLast?'Finish':'Next →'}</button>
+      </div>
+    </div>`;
+  document.getElementById('spell-in')?.focus();
+  speak(word);
+}
+
+function speak(w){
+  if('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.rate=0.85;u.lang='en-US';window.speechSynthesis.speak(u);}
+}
+
+function submitListen(){
+  const el=document.getElementById('spell-in');
+  const v=el?el.value.trim().toLowerCase():'';
+  const word=currentWords[listenIdx];
+  if(!v){skipListen();return;}
+  if(v===word.toLowerCase())listenRes.correct++;
+  else{listenRes.wrong++;listenRes.wrongWords.push({y:v,c:word});}
+  nextListen();
+}
+function skipListen(){listenRes.skipped++;nextListen();}
+function nextListen(){
+  listenIdx++;
+  if(listenIdx>=currentWords.length){saveSession('Listen & Spell',listenRes.correct,listenRes.wrong,listenRes.skipped);renderListenRes();}
+  else renderListenWord();
+}
+
+function renderListenRes(){
+  const {correct,wrong,skipped,wrongWords}=listenRes;
+  const acc=currentWords.length>0?Math.round(correct/currentWords.length*100):0;
+  const col=v=>v>=70?'var(--success)':v>=40?'var(--warn)':'var(--danger)';
+  document.getElementById('listen-area').innerHTML=`
+    <div class="sh-title">Test complete</div>
+    <div class="score-grid">
+      <div class="sc ok"><div class="sc-n">${correct}</div><div class="sc-l">Correct</div></div>
+      <div class="sc err"><div class="sc-n">${wrong}</div><div class="sc-l">Wrong</div></div>
+      <div class="sc sk"><div class="sc-n">${skipped}</div><div class="sc-l">Skipped</div></div>
+    </div>
+    <div class="acc-block"><div class="acc-n" style="color:${col(acc)}">${acc}%</div><div class="acc-l">Accuracy</div></div>
+    ${wrongWords.length?`<div class="wrong-list"><div class="wl-head">Review</div>${wrongWords.map(w=>`<div class="wl-row"><span class="wl-y">${w.y}</span><span class="wl-s"> → </span><span class="wl-c">${w.c}</span></div>`).join('')}</div>`:''}
+    <div class="res-btns"><button class="btn-p" onclick="openDiff('listen')">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
+}
+
+let essayTopic='';
+function initEssay(){
+  const topics=shuffle([...TOPICS]).slice(0,3);
+  document.getElementById('essay-area').innerHTML=`
+    <div class="sh"><div class="sh-title">Pick a topic</div><div class="sh-sub">Write 150 words on one of these</div></div>
+    <div class="topic-list">${topics.map(t=>`<div class="topic-row" onclick="selectTopic(this)" data-t="${t.replace(/"/g,'&quot;')}"><span>${t}</span><span style="color:var(--faint);font-size:12px">→</span></div>`).join('')}</div>`;
+}
+function selectTopic(el){
+  essayTopic=el.dataset.t;
+  document.getElementById('essay-area').innerHTML=`
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Topic</div>
+    <div style="font-size:14px;line-height:1.5;margin-bottom:1.5rem">${essayTopic}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:12px;color:var(--muted)">Min. 150 words</span>
+      <span class="wc-badge" id="wc">0 words</span>
+    </div>
+    <textarea class="ta" id="essay-ta" placeholder="Start writing..." oninput="updateWC()"></textarea>
+    <button class="btn-p" onclick="analyseEssay()">Submit & analyse</button>`;
+  document.getElementById('essay-ta')?.focus();
+}
+function updateWC(){
+  const ta=document.getElementById('essay-ta'),b=document.getElementById('wc');
+  if(!ta||!b)return;
+  const c=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;
+  b.textContent=c+' words';b.className='wc-badge'+(c>=150?' ok':'');
+}
+function analyseEssay(){
+  const ta=document.getElementById('essay-ta');if(!ta)return;
+  const text=ta.value.trim();
+  const wc=text?text.split(/\s+/).length:0;
+  if(wc<50){showNotif('Write more before submitting');return;}
+  const errors=[];
+  const words=text.split(/\s+/);
+  for(let i=1;i<words.length;i++)
+    if(words[i].toLowerCase().replace(/[.,!?]/g,'')=== words[i-1].toLowerCase().replace(/[.,!?]/g,''))
+      errors.push(`Repeated word: "${words[i].replace(/[.,!?]/g,'')}"`)
+  const sents=text.split(/[.!?]+/).filter(s=>s.trim());
+  if(sents.filter(s=>s.trim().split(/\s+/).length<4).length>2)errors.push('Several very short sentences — try expanding ideas');
+  const sp=Math.max(40,Math.min(100,100-errors.length*10));
+  const st=Math.min(100,50+(wc>=150?20:Math.floor(wc/150*20))+(sents.length>=5?20:0));
+  const ov=Math.round((sp+st)/2);
+  const col=v=>v>=70?'var(--success)':v>=50?'var(--warn)':'var(--danger)';
+  document.getElementById('essay-area').innerHTML=`
+    <div class="sh-title">Analysis</div>
+    <div class="ea">
+      <div class="ea-head">Scores</div>
+      <div class="ea-scores">
+        <div class="ea-sc"><div class="ea-n" style="color:${col(sp)}">${sp}</div><div class="ea-l">Spelling</div></div>
+        <div class="ea-sc"><div class="ea-n" style="color:${col(st)}">${st}</div><div class="ea-l">Structure</div></div>
+        <div class="ea-sc"><div class="ea-n" style="color:${col(ov)}">${ov}</div><div class="ea-l">Overall</div></div>
+      </div>
+      ${errors.map(e=>`<div class="sug"><span>!</span>${e}</div>`).join('')}
+      ${!errors.length?'<div class="sug" style="color:var(--success)"><span>✓</span>No obvious errors.</div>':''}
+    </div>
+    <div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--muted)">${wc} words · ${sents.length} sentences</div>
+    <div class="res-btns"><button class="btn-p" onclick="initEssay()">Try another</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
+  saveSession('Essay',Math.round(sp/10),errors.length,0);
+}
+
+function getA(){try{return JSON.parse(localStorage.getItem('si-a')||'[]')}catch{return[]}}
+function setA(a){localStorage.setItem('si-a',JSON.stringify(a));}
+function getLists(){const a=getA();return['All',...new Set(a.map(x=>x.list||'General'))];}
+function renderLib(){
+  const articles=getA(),lists=getLists();
+  const tabs=document.getElementById('ltabs'),wrap=document.getElementById('art-list-wrap');
+  if(!tabs||!wrap)return;
+  tabs.innerHTML=lists.map(l=>`<button class="ltab ${l===activeList?'active':''}" onclick="switchList('${l}')">${l}</button>`).join('');
+  const filtered=activeList==='All'?articles:articles.filter(a=>(a.list||'General')===activeList);
+  if(!filtered.length){wrap.innerHTML=`<div class="empty">No articles yet.<br>Tap + add to get started.</div>`;return;}
+  wrap.innerHTML=`<div class="art-list">${filtered.map(a=>`<div class="art-row"><div><div class="art-title">${a.title||'Untitled'}</div><div class="art-meta">${a.list||'General'} · ${a.date||''}</div></div><div class="art-btns"><button class="art-btn rd" onclick="openArt('${a.url.replace(/'/g,"\\'")}','${(a.title||'').replace(/'/g,"\\'")}')">read</button><button class="art-btn" onclick="delArt(${a.id})">✕</button></div></div>`).join('')}</div>`;
+}
+function switchList(l){activeList=l;renderLib();}
+function openModal(){document.getElementById('add-modal').classList.add('open');}
+function closeModal(){document.getElementById('add-modal').classList.remove('open');['m-url','m-title','m-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
+function saveArticle(){
+  const url=document.getElementById('m-url').value.trim();
+  if(!url){showNotif('Enter a URL');return;}
+  const title=document.getElementById('m-title').value.trim();
+  const list=document.getElementById('m-list').value.trim()||'General';
+  const a=getA();
+  a.unshift({id:Date.now(),url,title:title||url,list,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
+  setA(a);closeModal();renderLib();showNotif('Saved');
+}
+function delArt(id){setA(getA().filter(a=>a.id!==id));renderLib();}
+function openArt(url,title){
+  document.getElementById('read-content').innerHTML=`<div style="margin-bottom:1.5rem"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Article</div><div style="font-size:1.1rem;font-weight:500;line-height:1.4">${title}</div></div><p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Opens in a new tab.</p><button class="btn-p" style="max-width:240px" onclick="window.open('${url}','_blank')">Open article →</button>`;
+  nav('read-article');
+}
+
+function getS(){try{return JSON.parse(localStorage.getItem('si-s')||'[]')}catch{return[]}}
+function saveSession(game,correct,wrong,skipped){
+  const s=getS();
+  s.unshift({game,correct,wrong,skipped,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'}),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});
+  localStorage.setItem('si-s',JSON.stringify(s.slice(0,50)));
+  loadStats();
+}
+function loadStats(){
+  const s=getS();
+  const tc=s.reduce((a,x)=>a+(x.correct||0),0);
+  const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
+  const acc=(tc+tw)>0?Math.round(tc/(tc+tw)*100)+'%':'—';
+  const g=id=>document.getElementById(id);
+  if(g('s-l'))g('s-l').textContent=tc;
+  if(g('s-s'))g('s-s').textContent=s.length;
+  if(g('s-a'))g('s-a').textContent=acc;
+}
+function renderAnalysis(){
+  const c=document.getElementById('analysis-content');if(!c)return;
+  const s=getS();
+  if(!s.length){c.innerHTML=`<div class="empty">Complete a few games.<br>Your history will appear here.</div>`;return;}
+  const tc=s.reduce((a,x)=>a+(x.correct||0),0);
+  const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
+  const acc=(tc+tw)>0?Math.round(tc/(tc+tw)*100):0;
+  c.innerHTML=`<div class="score-grid" style="margin-bottom:1.25rem"><div class="sc ok"><div class="sc-n">${tc}</div><div class="sc-l">Correct</div></div><div class="sc err"><div class="sc-n">${tw}</div><div class="sc-l">Wrong</div></div><div class="sc"><div class="sc-n">${acc}%</div><div class="sc-l">Accuracy</div></div></div><div class="hist-list">${s.slice(0,20).map(x=>`<div class="hist-row"><div class="hist-top"><span class="hist-game">${x.game}</span><span class="hist-date">${x.date} ${x.time}</span></div><div class="hist-scores"><span class="hs ok"><span class="hn">${x.correct}</span> correct</span><span class="hs err"><span class="hn">${x.wrong}</span> wrong</span>${x.skipped?`<span class="hs"><span class="hn">${x.skipped}</span> skipped</span>`:''}</div></div>`).join('')}</div>`;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function showNotif(msg){const n=document.getElementById('notif');n.textContent=msg;n.className='notif show';setTimeout(()=>{n.className='notif';},2500);}
+</script>
+</body>
+</html>
