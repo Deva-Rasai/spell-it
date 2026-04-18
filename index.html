@@ -160,20 +160,30 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 <body>
 <div class="notif" id="notif"></div>
 
-<!-- DIFFICULTY OVERLAY -->
 <div class="overlay" id="diff-ov">
   <div class="popup">
     <div class="popup-title">Select difficulty</div>
-    <div class="popup-sub">Words are picked based on your level</div>
+    <div class="popup-sub">5 words · all levels</div>
     <div class="diff-list">
-      <div class="diff-row" onclick="startGame('easy')">Easy <span class="diff-tag">4–6 letters · 5 words</span></div>
-      <div class="diff-row" onclick="startGame('hard')">Hard <span class="diff-tag">7–10 letters · 10 words</span></div>
-      <div class="diff-row" onclick="startGame('difficult')">Difficult <span class="diff-tag">11+ letters · 10 words</span></div>
+      <div class="diff-row" onclick="startGame('easy')">Easy <span class="diff-tag">4–6 letter words</span></div>
+      <div class="diff-row" onclick="startGame('hard')">Hard <span class="diff-tag">7–10 letter words</span></div>
+      <div class="diff-row" onclick="startGame('difficult')">Difficult <span class="diff-tag">11+ letter words</span></div>
     </div>
   </div>
 </div>
 
-<!-- ADD ARTICLE MODAL -->
+<div class="overlay" id="listen-diff-ov">
+  <div class="popup">
+    <div class="popup-title">Select difficulty</div>
+    <div class="popup-sub">10 words · hear each word and spell it</div>
+    <div class="diff-list">
+      <div class="diff-row" onclick="startListenGame('easy')">Easy <span class="diff-tag">4–6 letter words</span></div>
+      <div class="diff-row" onclick="startListenGame('hard')">Hard <span class="diff-tag">7–10 letter words</span></div>
+      <div class="diff-row" onclick="startListenGame('difficult')">Difficult <span class="diff-tag">11+ letter words</span></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-ov" id="add-modal">
   <div class="modal">
     <div class="modal-title">Add article</div>
@@ -222,10 +232,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
     <div class="sh"><div class="sh-title">Choose game</div><div class="sh-sub">Pick how you want to practice</div></div>
     <div class="game-list">
       <div class="game-row" onclick="openDiff('respell')">
-        <div class="gr-left"><div class="gr-icon">◉</div><div><div class="gr-name">Re-Spell</div><div class="gr-desc">See words, then spell from memory</div></div></div>
+        <div class="gr-left"><div class="gr-icon">◉</div><div><div class="gr-name">Re-Spell</div><div class="gr-desc">See 5 words for 20 sec, spell from memory</div></div></div>
         <div class="gr-arrow">→</div>
       </div>
-      <div class="game-row" onclick="openDiff('listen')">
+      <div class="game-row" onclick="openListenDiff()">
         <div class="gr-left"><div class="gr-icon">◎</div><div><div class="gr-name">Listen & Spell</div><div class="gr-desc">Hear the word, read its meaning, type spelling</div></div></div>
         <div class="gr-arrow">→</div>
       </div>
@@ -293,689 +303,42 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 </div>
 
 <script>
-// ── STATE ─────────────────────────────────────────
 let wordBank={easy:[],hard:[],difficult:[]};
 let currentGame='',currentDiff='',currentWords=[];
 let rTimer=null,pendingGame='';
 let listenIdx=0,listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
 let activeList='All';
-let navHistory=['home']; // tracks screen history for phone back button
 
 const WORDS_URL='https://raw.githubusercontent.com/deva-rasai/spell-it/main/words.json';
 const TOPICS=["Is social media making us more lonely or more connected?","Should school exams be replaced with continuous assessments?","The role of books in the age of the internet","Is ambition a virtue or a source of unhappiness?","How technology is changing the way we communicate","Should cities ban private cars to reduce pollution?","The importance of failure in achieving success","Does modern life give us enough time to think?","Is cricket more than just a sport in India?","Should voting be made compulsory for all citizens?","The value of learning a second language","Are we too dependent on our smartphones?"];
 
-// Fallback word bank — objects with {word, meaning}
 const FALLBACK={
-  easy:[
-    {word:"able",meaning:"having the skill or means to do something"},
-    {word:"acid",meaning:"a chemical substance that has a pH of less than 7"},
-    {word:"aged",meaning:"having lived for a long time; old"},
-    {word:"also",meaning:"in addition; too"},
-    {word:"area",meaning:"a part of a place, town, or country"},
-    {word:"army",meaning:"a large organized group of soldiers"},
-    {word:"away",meaning:"to or at a distance from a place or person"},
-    {word:"back",meaning:"the rear surface of the human body"},
-    {word:"ball",meaning:"a round object used in games and sports"},
-    {word:"band",meaning:"a flat strip or loop of material used to fasten things"},
-    {word:"bank",meaning:"an institution that manages money"},
-    {word:"base",meaning:"the lowest part or foundation of something"},
-    {word:"bear",meaning:"a large, heavy mammal with thick fur"},
-    {word:"beat",meaning:"to strike repeatedly; to defeat"},
-    {word:"bell",meaning:"a hollow metal object that makes a ringing sound"},
-    {word:"best",meaning:"of the most excellent or desirable type"},
-    {word:"bird",meaning:"a warm-blooded animal with feathers and wings"},
-    {word:"blow",meaning:"to move air with force; a hard hit"},
-    {word:"blue",meaning:"the colour of the sky on a clear day"},
-    {word:"boat",meaning:"a small vessel for travelling on water"},
-    {word:"body",meaning:"the physical structure of a person or animal"},
-    {word:"bone",meaning:"a hard rigid tissue forming the skeleton"},
-    {word:"book",meaning:"a written or printed work on pages bound together"},
-    {word:"born",meaning:"having come into existence through birth"},
-    {word:"both",meaning:"used to refer to two people or things"},
-    {word:"bowl",meaning:"a round deep dish used for food or liquid"},
-    {word:"burn",meaning:"to be on fire; to destroy with fire"},
-    {word:"busy",meaning:"having a great deal to do; occupied"},
-    {word:"calm",meaning:"not showing or feeling nervousness; quiet"},
-    {word:"card",meaning:"a small piece of stiff paper with information on it"},
-    {word:"care",meaning:"the provision of what is needed for health and protection"},
-    {word:"case",meaning:"an instance of a particular situation; a container"},
-    {word:"cash",meaning:"money in coins or notes"},
-    {word:"cell",meaning:"the smallest unit of a living organism"},
-    {word:"chat",meaning:"an informal conversation"},
-    {word:"chip",meaning:"a small piece cut or broken off something"},
-    {word:"city",meaning:"a large town with a cathedral or special status"},
-    {word:"clay",meaning:"a stiff sticky fine-grained soil used for making pots"},
-    {word:"coal",meaning:"a combustible black rock used as fuel"},
-    {word:"coat",meaning:"an outer garment worn outdoors"},
-    {word:"code",meaning:"a system of words or symbols representing information"},
-    {word:"coin",meaning:"a flat disc of metal used as currency"},
-    {word:"cold",meaning:"of or at a low temperature"},
-    {word:"come",meaning:"to move or travel towards the speaker"},
-    {word:"cook",meaning:"to prepare food by heating it"},
-    {word:"cool",meaning:"moderately cold; fashionably attractive"},
-    {word:"cope",meaning:"to deal effectively with something difficult"},
-    {word:"copy",meaning:"a thing made to be similar to another"},
-    {word:"core",meaning:"the tough central part of fruit; the most important part"},
-    {word:"cost",meaning:"the amount paid or required for something"},
-    {word:"cure",meaning:"a substance or treatment that relieves a disease"},
-    {word:"dark",meaning:"with little or no light"},
-    {word:"data",meaning:"facts and statistics collected for reference or analysis"},
-    {word:"deal",meaning:"an agreement made between parties"},
-    {word:"debt",meaning:"a sum of money owed to someone"},
-    {word:"deep",meaning:"extending far down from the top or surface"},
-    {word:"deny",meaning:"to state that something is not true"},
-    {word:"diet",meaning:"the kinds of food a person habitually eats"},
-    {word:"disk",meaning:"a flat thin circular object for storing data"},
-    {word:"done",meaning:"carried out, completed, or treated"},
-    {word:"door",meaning:"a hinged barrier used to close an entrance"},
-    {word:"dose",meaning:"a quantity of medicine taken at one time"},
-    {word:"draw",meaning:"to produce a picture by making lines on paper"},
-    {word:"drop",meaning:"a small round or pear-shaped portion of liquid"},
-    {word:"drum",meaning:"a percussion instrument with a membrane stretched over a frame"},
-    {word:"dust",meaning:"fine dry powder of earth or other matter"},
-    {word:"duty",meaning:"a moral or legal obligation"},
-    {word:"earn",meaning:"to receive money in return for work"},
-    {word:"ease",meaning:"absence of difficulty or effort"},
-    {word:"edge",meaning:"the outside limit of an object or surface"},
-    {word:"even",meaning:"flat and smooth; equal in number"},
-    {word:"evil",meaning:"profoundly immoral and wicked"},
-    {word:"face",meaning:"the front part of the head"},
-    {word:"fact",meaning:"a thing that is known to be true"},
-    {word:"fail",meaning:"to be unsuccessful in achieving a goal"},
-    {word:"fall",meaning:"to move downward quickly; the season of autumn"},
-    {word:"fame",meaning:"the state of being known by many people"},
-    {word:"farm",meaning:"an area of land used for growing crops or raising animals"},
-    {word:"fast",meaning:"moving or capable of moving at high speed"},
-    {word:"fear",meaning:"an unpleasant emotion caused by danger or threat"},
-    {word:"feel",meaning:"to be aware of through the sense of touch"},
-    {word:"file",meaning:"a folder or box for keeping loose papers"},
-    {word:"fill",meaning:"to put someone or something into a space until it is full"},
-    {word:"film",meaning:"a thin flexible strip of plastic used in a camera"},
-    {word:"find",meaning:"to discover by chance or searching"},
-    {word:"fire",meaning:"combustion that gives off light and heat"},
-    {word:"firm",meaning:"having a solid, almost unyielding surface"},
-    {word:"fish",meaning:"a limbless cold-blooded vertebrate living in water"},
-    {word:"flag",meaning:"a piece of cloth used as a symbol or signal"},
-    {word:"flat",meaning:"smooth and even; having no raised areas"},
-    {word:"flow",meaning:"to move along steadily and continuously"},
-    {word:"fold",meaning:"to bend something over on itself"},
-    {word:"food",meaning:"any nutritious substance organisms eat to maintain life"},
-    {word:"foot",meaning:"the lower extremity of the leg below the ankle"},
-    {word:"fork",meaning:"a utensil with two or more prongs"},
-    {word:"form",meaning:"the visible shape or configuration of something"},
-    {word:"four",meaning:"the number equivalent to 3 + 1"},
-    {word:"free",meaning:"not under the control or power of another"},
-    {word:"fuel",meaning:"material burned to produce heat or power"},
-    {word:"full",meaning:"containing as much as possible"},
-    {word:"gain",meaning:"to obtain or secure something desirable"},
-    {word:"game",meaning:"a form of play or sport with rules"},
-    {word:"gate",meaning:"a hinged barrier used to close an opening in a wall"},
-    {word:"gift",meaning:"a thing given willingly without payment"},
-    {word:"give",meaning:"to freely transfer the possession of something"},
-    {word:"goal",meaning:"the object of a person's ambition; a score in sport"},
-    {word:"gold",meaning:"a yellow precious metal used in jewellery"},
-    {word:"good",meaning:"to be desired or approved of"},
-    {word:"grab",meaning:"to grasp or seize suddenly and roughly"},
-    {word:"grip",meaning:"to take and keep a firm hold of"},
-    {word:"grow",meaning:"to undergo natural development"},
-    {word:"half",meaning:"either of two equal parts into which something is divided"},
-    {word:"hall",meaning:"the room or space just inside the front entrance of a house"},
-    {word:"hand",meaning:"the end part of a person's arm beyond the wrist"},
-    {word:"hang",meaning:"to suspend from above"},
-    {word:"hard",meaning:"solid, firm, and rigid; not easy to do"},
-    {word:"harm",meaning:"physical injury or damage; to cause hurt"},
-    {word:"hate",meaning:"to feel intense dislike for someone or something"},
-    {word:"head",meaning:"the upper part of the human body"},
-    {word:"heal",meaning:"to become sound or healthy again"},
-    {word:"heat",meaning:"the quality of being hot; high temperature"},
-    {word:"help",meaning:"to make it easier for someone to do something"},
-    {word:"here",meaning:"in, at, or to this place or position"},
-    {word:"hero",meaning:"a person admired for courage or noble qualities"},
-    {word:"hide",meaning:"to put or keep out of sight"},
-    {word:"high",meaning:"of great vertical extent; far above ground"},
-    {word:"hill",meaning:"a naturally raised area of land"},
-    {word:"hint",meaning:"a slight or indirect indication or suggestion"},
-    {word:"hold",meaning:"to keep or maintain in a specified position"},
-    {word:"hole",meaning:"a hollow place in a solid body or surface"},
-    {word:"home",meaning:"the place where one lives"},
-    {word:"hope",meaning:"a feeling of expectation and desire for something"},
-    {word:"hour",meaning:"a period of time equal to sixty minutes"},
-    {word:"huge",meaning:"extremely large"},
-    {word:"hunt",meaning:"to pursue and kill wild animals for food or sport"},
-    {word:"hurt",meaning:"to cause pain or injury to"},
-    {word:"idea",meaning:"a thought or suggestion as to a possible course of action"},
-    {word:"iron",meaning:"a strong hard magnetic silvery-grey metal"},
-    {word:"item",meaning:"an individual article or unit"},
-    {word:"jump",meaning:"to push oneself off the ground using legs and feet"},
-    {word:"just",meaning:"based on or behaving in what is morally right"},
-    {word:"keep",meaning:"to have or retain possession of"},
-    {word:"kill",meaning:"to cause the death of a person, animal, or other living thing"},
-    {word:"kind",meaning:"having a friendly and generous nature"},
-    {word:"king",meaning:"the male ruler of an independent state"},
-    {word:"lack",meaning:"the state of being without something"},
-    {word:"lake",meaning:"a large body of water surrounded by land"},
-    {word:"land",meaning:"the part of the earth's surface not covered by water"},
-    {word:"last",meaning:"coming after all others in time or order"},
-    {word:"late",meaning:"doing something after the expected time"},
-    {word:"lead",meaning:"to be in charge of; a heavy bluish-grey metal"},
-    {word:"leaf",meaning:"a flattened green structure attached to the stem of a plant"},
-    {word:"left",meaning:"on or towards the side of the body opposite the right"},
-    {word:"less",meaning:"a smaller amount of; not as much"},
-    {word:"lift",meaning:"to raise to a higher position or level"},
-    {word:"like",meaning:"having similar characteristics to; to find agreeable"},
-    {word:"line",meaning:"a long narrow mark or band"},
-    {word:"link",meaning:"a relationship between two things or situations"},
-    {word:"list",meaning:"a number of connected items written one after another"},
-    {word:"live",meaning:"to remain alive; to make one's home in a place"},
-    {word:"load",meaning:"a heavy or bulky thing being carried"},
-    {word:"loan",meaning:"a sum of money lent at interest"},
-    {word:"lock",meaning:"a mechanism for keeping a door or container fastened"},
-    {word:"long",meaning:"measuring a great distance from end to end"},
-    {word:"look",meaning:"to direct one's gaze; to appear to be"},
-    {word:"loss",meaning:"the fact of no longer having something"},
-    {word:"love",meaning:"an intense feeling of deep affection"},
-    {word:"luck",meaning:"success apparently brought by chance"},
-    {word:"made",meaning:"formed by making; manufactured"},
-    {word:"mail",meaning:"letters and packages sent by post"},
-    {word:"main",meaning:"chief in size or importance"},
-    {word:"make",meaning:"to form something by putting parts together"},
-    {word:"many",meaning:"a large number of"},
-    {word:"mark",meaning:"a small area on a surface differing in colour"},
-    {word:"mass",meaning:"a large body of matter with no definite shape"},
-    {word:"meal",meaning:"any of the regular occasions in a day when food is eaten"},
-    {word:"mean",meaning:"intending to convey; unkind or unfair"},
-    {word:"meet",meaning:"to come into contact or be introduced to"},
-    {word:"mild",meaning:"not severe, serious, or harsh"},
-    {word:"mile",meaning:"a unit of distance equal to 1,760 yards"},
-    {word:"mind",meaning:"the element enabling consciousness, thought, and feeling"},
-    {word:"miss",meaning:"to fail to hit, reach, or catch"},
-    {word:"mode",meaning:"a way or manner in which something is done"},
-    {word:"mood",meaning:"a temporary state of mind or feeling"},
-    {word:"more",meaning:"a greater or additional amount"},
-    {word:"most",meaning:"greatest in amount or degree"},
-    {word:"move",meaning:"to go in a specified direction or manner"},
-    {word:"much",meaning:"a great amount or degree of"},
-    {word:"must",meaning:"be obliged to; expressing necessity"},
-    {word:"myth",meaning:"a traditional story explaining a natural phenomenon"},
-    {word:"name",meaning:"a word by which a person or thing is known"},
-    {word:"need",meaning:"require something because it is essential"},
-    {word:"next",meaning:"coming immediately after the present one"},
-    {word:"nice",meaning:"giving pleasure or satisfaction; pleasant"},
-    {word:"nine",meaning:"the number equivalent to 8 + 1"},
-    {word:"none",meaning:"not any; no one"},
-    {word:"note",meaning:"a brief written record; a short informal letter"},
-    {word:"open",meaning:"allowing access, passage, or a view through"},
-    {word:"over",meaning:"extending directly upward from; more than"},
-    {word:"pace",meaning:"a single step taken when walking or running"},
-    {word:"pack",meaning:"to fill a suitcase or bag with clothes and other things"},
-    {word:"page",meaning:"one side of a leaf of a book, magazine, or newspaper"},
-    {word:"pain",meaning:"physical suffering caused by illness or injury"},
-    {word:"pair",meaning:"a set of two things used together"},
-    {word:"park",meaning:"a large public garden or area of land"},
-    {word:"part",meaning:"a piece or segment of something"},
-    {word:"pass",meaning:"to move past or beyond; to be successful in a test"},
-    {word:"past",meaning:"gone by in time; no longer existing"},
-    {word:"path",meaning:"a way or track laid for walking"},
-    {word:"peak",meaning:"the pointed top of a mountain"},
-    {word:"pick",meaning:"to take hold of and remove from a position"},
-    {word:"plan",meaning:"a detailed proposal for doing something"},
-    {word:"play",meaning:"to engage in activity for enjoyment"},
-    {word:"plot",meaning:"a plan made in secret; the main events of a story"},
-    {word:"plus",meaning:"with the addition of; a positive quantity"},
-    {word:"poem",meaning:"a piece of writing arranged with attention to feeling and sound"},
-    {word:"pool",meaning:"a small area of still water; a swimming pool"},
-    {word:"poor",meaning:"lacking sufficient money to live comfortably"},
-    {word:"port",meaning:"a town or city with a harbour"},
-    {word:"pose",meaning:"to present or constitute a problem or threat"},
-    {word:"post",meaning:"letters and parcels sent by mail"},
-    {word:"pull",meaning:"to exert force on something so it moves toward one"},
-    {word:"pump",meaning:"a mechanical device for moving fluids"},
-    {word:"pure",meaning:"not mixed or adulterated with any other substance"},
-    {word:"push",meaning:"to exert force on to move away from oneself"},
-    {word:"race",meaning:"a competition of speed; a group of people sharing heritage"},
-    {word:"rage",meaning:"violent uncontrollable anger"},
-    {word:"rain",meaning:"moisture condensed from atmosphere falling as drops"},
-    {word:"rank",meaning:"a position in a hierarchy or scale"},
-    {word:"rare",meaning:"not occurring very often; unusually good"},
-    {word:"rate",meaning:"a measure, quantity, or frequency measured against another"},
-    {word:"read",meaning:"to look at and comprehend the meaning of written text"},
-    {word:"rely",meaning:"to depend on with full trust or confidence"},
-    {word:"rent",meaning:"a tenant's regular payment to a landlord"},
-    {word:"rest",meaning:"to cease work in order to relax or recover"},
-    {word:"rich",meaning:"having a great deal of money or assets"},
-    {word:"ride",meaning:"to sit on and control the movement of a horse or bicycle"},
-    {word:"ring",meaning:"a small circular band worn on a finger"},
-    {word:"risk",meaning:"a situation involving exposure to danger"},
-    {word:"road",meaning:"a wide way leading from one place to another"},
-    {word:"role",meaning:"the function assumed by someone in a situation"},
-    {word:"roof",meaning:"the structure forming the upper covering of a building"},
-    {word:"room",meaning:"a part of a building enclosed by walls and ceiling"},
-    {word:"root",meaning:"the part of a plant that attaches it to the ground"},
-    {word:"rope",meaning:"a length of thick strong cord"},
-    {word:"ruin",meaning:"the physical destruction of a building; to cause destruction"},
-    {word:"rule",meaning:"a regulation governing conduct or procedure"},
-    {word:"rush",meaning:"to move with urgency or speed"},
-    {word:"safe",meaning:"protected from danger, harm, or risk"},
-    {word:"sail",meaning:"a piece of material extended on a mast to catch wind"},
-    {word:"salt",meaning:"a white crystalline substance used to season food"},
-    {word:"same",meaning:"identical; not different"},
-    {word:"sand",meaning:"a loose granular substance resulting from rock erosion"},
-    {word:"save",meaning:"to keep safe from harm or danger"},
-    {word:"seal",meaning:"a device with a design used for stamping; a marine mammal"},
-    {word:"seed",meaning:"a flowering plant's unit of reproduction"},
-    {word:"seek",meaning:"to try to find or obtain something"},
-    {word:"self",meaning:"a person's essential being distinguishing them from others"},
-    {word:"sell",meaning:"to give something in exchange for money"},
-    {word:"send",meaning:"to cause something to go to a destination"},
-    {word:"shed",meaning:"a simple roofed structure; to lose or cast off"},
-    {word:"ship",meaning:"a large boat for travelling on water"},
-    {word:"shoe",meaning:"a covering for the foot with a solid sole"},
-    {word:"shop",meaning:"a building where goods are sold"},
-    {word:"shot",meaning:"the firing of a gun or cannon"},
-    {word:"show",meaning:"to be or allow to be seen; a performance"},
-    {word:"sick",meaning:"affected by physical or mental illness"},
-    {word:"side",meaning:"a position to the left or right of something"},
-    {word:"sign",meaning:"an object or event indicating the existence of something"},
-    {word:"sing",meaning:"to make musical sounds with the voice"},
-    {word:"sink",meaning:"to go down below the surface of liquid"},
-    {word:"size",meaning:"the relative extent of something"},
-    {word:"skin",meaning:"the thin layer of tissue forming the outer covering of the body"},
-    {word:"slow",meaning:"moving or operating at less than normal speed"},
-    {word:"snow",meaning:"frozen water vapour falling as white flakes"},
-    {word:"soft",meaning:"easy to mould, cut, or compress; gentle"},
-    {word:"soil",meaning:"the upper layer of earth in which plants grow"},
-    {word:"some",meaning:"an unspecified amount or number of"},
-    {word:"song",meaning:"a short poem or other set of words set to music"},
-    {word:"soul",meaning:"the spiritual part of a human being"},
-    {word:"soup",meaning:"a liquid dish made by boiling meat or vegetables"},
-    {word:"spot",meaning:"a small round mark on a surface"},
-    {word:"star",meaning:"a fixed luminous point in the night sky"},
-    {word:"stay",meaning:"to remain in a specified place"},
-    {word:"step",meaning:"an act of lifting and setting down one's foot"},
-    {word:"stop",meaning:"to come to an end; to cease movement"},
-    {word:"suit",meaning:"a set of outer clothes of matching fabric"},
-    {word:"swim",meaning:"to propel oneself through water using movements of the body"},
-    {word:"tail",meaning:"the rear end of an animal's body"},
-    {word:"tall",meaning:"of great or more than average height"},
-    {word:"tank",meaning:"a large container for liquid; an armoured military vehicle"},
-    {word:"task",meaning:"a piece of work to be done"},
-    {word:"tent",meaning:"a portable shelter made of cloth"},
-    {word:"term",meaning:"a word used to describe a thing; a fixed period"},
-    {word:"test",meaning:"a procedure to establish quality or reliability"},
-    {word:"text",meaning:"written or printed words; a message sent by phone"},
-    {word:"tide",meaning:"the rise and fall of sea levels"},
-    {word:"time",meaning:"the indefinite continued progress of existence"},
-    {word:"tire",meaning:"to feel in need of rest or sleep"},
-    {word:"told",meaning:"past tense of tell; communicated information"},
-    {word:"tone",meaning:"the quality of a sound; a shade of colour"},
-    {word:"tool",meaning:"a device used to carry out a function"},
-    {word:"tour",meaning:"a journey for pleasure visiting several places"},
-    {word:"town",meaning:"a built-up area with a name and defined boundaries"},
-    {word:"tree",meaning:"a woody perennial plant with a trunk and branches"},
-    {word:"trip",meaning:"a journey to a place; to lose one's balance"},
-    {word:"true",meaning:"in accordance with fact or reality"},
-    {word:"tune",meaning:"a melody; to adjust an instrument to correct pitch"},
-    {word:"turn",meaning:"to move in a circular direction"},
-    {word:"type",meaning:"a category of things with common characteristics"},
-    {word:"unit",meaning:"an individual thing regarded as a single entity"},
-    {word:"used",meaning:"having already been used; accustomed to"},
-    {word:"vary",meaning:"to differ in some way; to make different"},
-    {word:"vast",meaning:"of very great extent or quantity"},
-    {word:"verb",meaning:"a word used to describe an action or state"},
-    {word:"view",meaning:"the ability to see something; an opinion"},
-    {word:"vine",meaning:"a climbing or trailing plant"},
-    {word:"void",meaning:"not valid or legally binding; an empty space"},
-    {word:"wade",meaning:"to walk with effort through water or mud"},
-    {word:"wage",meaning:"a fixed regular payment for work"},
-    {word:"wake",meaning:"to emerge from sleep; a trail of disturbed water"},
-    {word:"walk",meaning:"to move at a regular pace by lifting the feet"},
-    {word:"wall",meaning:"a continuous vertical brick or stone structure"},
-    {word:"warm",meaning:"of a moderately high temperature"},
-    {word:"wave",meaning:"a ridge of water moving along the surface; to move a hand"},
-    {word:"weak",meaning:"lacking the power to perform physically demanding tasks"},
-    {word:"wide",meaning:"of great or more than average width"},
-    {word:"wild",meaning:"living or growing in the natural environment"},
-    {word:"will",meaning:"expressing the future tense; a legal document"},
-    {word:"wind",meaning:"the perceptible natural movement of air"},
-    {word:"wine",meaning:"an alcoholic drink made from fermented grapes"},
-    {word:"wing",meaning:"a modified forelimb of a bird used for flying"},
-    {word:"wish",meaning:"to feel or express a desire for something"},
-    {word:"wolf",meaning:"a wild carnivorous mammal related to the dog"},
-    {word:"wood",meaning:"the hard fibrous material forming the trunk of a tree"},
-    {word:"word",meaning:"a single unit of language"},
-    {word:"work",meaning:"activity involving mental or physical effort"},
-    {word:"wrap",meaning:"to cover or enclose in paper or soft material"},
-    {word:"yard",meaning:"a unit of length equal to 3 feet; an enclosed area"},
-    {word:"your",meaning:"belonging to or associated with the person being addressed"}
-  ],
-  hard:[
-    {word:"abandon",meaning:"to cease to support or look after someone; leave behind"},
-    {word:"ability",meaning:"possession of the means or skill to do something"},
-    {word:"absence",meaning:"the state of being away from a place or person"},
-    {word:"absolute",meaning:"not qualified or diminished in any way; total"},
-    {word:"abstract",meaning:"existing in thought or as an idea but not having physical existence"},
-    {word:"abundant",meaning:"existing or available in large quantities; plentiful"},
-    {word:"academic",meaning:"relating to education and scholarship"},
-    {word:"accuracy",meaning:"the quality or state of being correct or precise"},
-    {word:"acoustic",meaning:"relating to sound or the sense of hearing"},
-    {word:"adequate",meaning:"satisfactory or acceptable in quality or quantity"},
-    {word:"advocate",meaning:"to publicly recommend or support; a person who does this"},
-    {word:"ambitious",meaning:"having or showing a strong desire to succeed"},
-    {word:"announce",meaning:"to make a public declaration of something"},
-    {word:"apparent",meaning:"clearly visible or understood; obvious"},
-    {word:"appetite",meaning:"a natural desire to satisfy a bodily need"},
-    {word:"approach",meaning:"to come near to in distance or quality"},
-    {word:"argument",meaning:"an exchange of diverging views; a reason given in evidence"},
-    {word:"artifact",meaning:"an object made by a human being"},
-    {word:"attached",meaning:"joined or connected to something"},
-    {word:"attitude",meaning:"a settled way of thinking about something"},
-    {word:"authentic",meaning:"of undisputed origin; genuine"},
-    {word:"balanced",meaning:"keeping or showing a balance; stable"},
-    {word:"behavior",meaning:"the way in which one acts or conducts oneself"},
-    {word:"beneath",meaning:"extending or directly below"},
-    {word:"boundary",meaning:"a line marking the limits of an area"},
-    {word:"capable",meaning:"having the ability, fitness, or quality to do something"},
-    {word:"capture",meaning:"to take into one's possession by force"},
-    {word:"careful",meaning:"making sure of avoiding potential problems"},
-    {word:"caution",meaning:"care taken to avoid danger or mistakes"},
-    {word:"certain",meaning:"known for sure; established beyond doubt"},
-    {word:"chronic",meaning:"persisting for a long time; constantly recurring"},
-    {word:"clarity",meaning:"the quality of being coherent and intelligible"},
-    {word:"classic",meaning:"judged over a period of time to be of the highest quality"},
-    {word:"climate",meaning:"the weather conditions prevailing in an area"},
-    {word:"closure",meaning:"the act of closing something; a sense of resolution"},
-    {word:"coherent",meaning:"logical and consistent; forming a unified whole"},
-    {word:"collapse",meaning:"to suddenly fall down or give way"},
-    {word:"compete",meaning:"to strive to gain something by defeating others"},
-    {word:"complex",meaning:"consisting of many different parts; not simple"},
-    {word:"concept",meaning:"an abstract idea or general notion"},
-    {word:"concrete",meaning:"existing in material form; real"},
-    {word:"conflict",meaning:"a serious disagreement; armed fighting"},
-    {word:"consent",meaning:"permission for something to happen"},
-    {word:"context",meaning:"the circumstances surrounding an event or statement"},
-    {word:"convert",meaning:"to cause to change in form or character"},
-    {word:"courage",meaning:"the ability to do something that frightens one"},
-    {word:"creative",meaning:"relating to or involving imagination and original ideas"},
-    {word:"crucial",meaning:"decisive or critical in importance"},
-    {word:"culture",meaning:"the ideas and customs of a society"},
-    {word:"curious",meaning:"eager to know or learn something"},
-    {word:"decline",meaning:"to become smaller or fewer; to politely refuse"},
-    {word:"deliver",meaning:"to bring and hand over to the proper recipient"},
-    {word:"despite",meaning:"without being affected by; notwithstanding"},
-    {word:"develop",meaning:"to grow or cause to grow and become more mature"},
-    {word:"devoted",meaning:"very loving or loyal"},
-    {word:"dilemma",meaning:"a situation where a difficult choice must be made"},
-    {word:"diverse",meaning:"showing a great deal of variety"},
-    {word:"dynamic",meaning:"characterised by constant change and activity"},
-    {word:"economy",meaning:"the wealth and resources of a country or region"},
-    {word:"element",meaning:"a fundamental part of something"},
-    {word:"embrace",meaning:"to hold someone closely in one's arms; to accept"},
-    {word:"emotion",meaning:"a strong feeling such as joy or anger"},
-    {word:"enhance",meaning:"to intensify or increase the quality of something"},
-    {word:"enormous",meaning:"very large in size, quantity, or extent"},
-    {word:"essence",meaning:"the intrinsic nature of something; the most important quality"},
-    {word:"ethical",meaning:"relating to moral principles; morally correct"},
-    {word:"evident",meaning:"plain or obvious; clearly seen or understood"},
-    {word:"examine",meaning:"to inspect someone or something closely"},
-    {word:"explore",meaning:"to travel through an unfamiliar area to learn about it"},
-    {word:"express",meaning:"to convey a thought or feeling in words"},
-    {word:"extreme",meaning:"reaching a high or the highest degree"},
-    {word:"failure",meaning:"lack of success; the omission of expected action"},
-    {word:"feature",meaning:"a distinctive attribute or aspect of something"},
-    {word:"fiction",meaning:"literature describing imaginary events and people"},
-    {word:"fragile",meaning:"easily broken or damaged; delicate"},
-    {word:"freedom",meaning:"the power to act, speak, or think without hindrance"},
-    {word:"genuine",meaning:"truly what something is said to be; authentic"},
-    {word:"harmful",meaning:"causing or likely to cause harm"},
-    {word:"history",meaning:"the study of past events"},
-    {word:"improve",meaning:"to make or become better"},
-    {word:"include",meaning:"to comprise as part of a whole"},
-    {word:"initial",meaning:"existing or occurring at the beginning"},
-    {word:"insight",meaning:"the capacity to gain an accurate and deep understanding"},
-    {word:"inspire",meaning:"to fill someone with the urge or ability to do something"},
-    {word:"intense",meaning:"of extreme force, degree, or strength"},
-    {word:"involve",meaning:"to have as a necessary part or result"},
-    {word:"justify",meaning:"to show or prove to be right or reasonable"},
-    {word:"language",meaning:"the method of human communication using words"},
-    {word:"logical",meaning:"of or according to the rules of logic"},
-    {word:"loyalty",meaning:"the quality of being loyal to someone or something"},
-    {word:"maintain",meaning:"to cause or enable something to continue"},
-    {word:"massive",meaning:"large and heavy or solid; exceptionally large"},
-    {word:"meaning",meaning:"what is intended to be or is expressed or signified"},
-    {word:"migrate",meaning:"to move from one region or habitat to another"},
-    {word:"natural",meaning:"existing in or derived from nature"},
-    {word:"network",meaning:"an arrangement of intersecting horizontal and vertical lines"},
-    {word:"neutral",meaning:"not supporting either side in a conflict"},
-    {word:"obvious",meaning:"easily perceived or understood; clear"},
-    {word:"operate",meaning:"to control the functioning of a machine or system"},
-    {word:"organic",meaning:"relating to or derived from living matter"},
-    {word:"outcome",meaning:"the way a thing turns out; a consequence"},
-    {word:"partial",meaning:"existing only in part; incomplete"},
-    {word:"passion",meaning:"a strong and barely controllable emotion"},
-    {word:"pattern",meaning:"a repeated decorative design; a regular way of doing something"},
-    {word:"perform",meaning:"to carry out or accomplish an action"},
-    {word:"persist",meaning:"to continue firmly in an opinion or course of action"},
-    {word:"popular",meaning:"liked or admired by many people"},
-    {word:"possess",meaning:"to have as belonging to one; to own"},
-    {word:"predict",meaning:"to say or estimate that something will happen in the future"},
-    {word:"prepare",meaning:"to make ready for use or consideration"},
-    {word:"produce",meaning:"to make or manufacture from components"},
-    {word:"promote",meaning:"to further the progress of something; to raise to higher rank"},
-    {word:"propose",meaning:"to put forward for consideration"},
-    {word:"protect",meaning:"to keep safe from harm or injury"},
-    {word:"provide",meaning:"to make available for use; to supply"},
-    {word:"quality",meaning:"the standard of something as measured against other things"},
-    {word:"rebuild",meaning:"to build again after it has been damaged or destroyed"},
-    {word:"reflect",meaning:"to throw back light; to think carefully about something"},
-    {word:"release",meaning:"to allow to move or act freely"},
-    {word:"replace",meaning:"to take the place of something"},
-    {word:"require",meaning:"to need something for a purpose"},
-    {word:"resolve",meaning:"to settle or find a solution to something"},
-    {word:"respect",meaning:"a feeling of deep admiration for someone"},
-    {word:"respond",meaning:"to say something in reply; to react"},
-    {word:"routine",meaning:"a sequence of actions regularly followed"},
-    {word:"satisfy",meaning:"to meet the expectations or needs of"},
-    {word:"science",meaning:"the intellectual study of the structure of the physical world"},
-    {word:"section",meaning:"any of the more or less distinct parts into which something is divided"},
-    {word:"segment",meaning:"each of the parts into which something is divided"},
-    {word:"service",meaning:"the action of helping or doing work for someone"},
-    {word:"society",meaning:"the community of people living in a country"},
-    {word:"solution",meaning:"a means of solving a problem"},
-    {word:"specific",meaning:"clearly defined or identified"},
-    {word:"subject",meaning:"a person or thing being discussed or studied"},
-    {word:"support",meaning:"to bear all or part of the weight of"},
-    {word:"surface",meaning:"the outside or uppermost layer of something"},
-    {word:"sustain",meaning:"to strengthen or support physically or mentally"},
-    {word:"tension",meaning:"mental or emotional strain"},
-    {word:"thought",meaning:"an idea or opinion produced by thinking"},
-    {word:"through",meaning:"moving in one side and out of the other"},
-    {word:"typical",meaning:"having the distinctive qualities of a type"},
-    {word:"visible",meaning:"able to be seen"},
-    {word:"willing",meaning:"ready, eager, or prepared to do something"},
-    {word:"witness",meaning:"a person who sees an event take place"}
-  ],
-  difficult:[
-    {word:"aberration",meaning:"a departure from what is normal or expected"},
-    {word:"acrimonious",meaning:"angry and bitter; having a sharp quality"},
-    {word:"acumen",meaning:"the ability to make good judgements and quick decisions"},
-    {word:"adamant",meaning:"refusing to be persuaded or to change one's mind"},
-    {word:"admonish",meaning:"to warn or reprimand someone firmly"},
-    {word:"aesthetic",meaning:"concerned with beauty or the appreciation of beauty"},
-    {word:"aggrandize",meaning:"to increase the power or reputation of someone"},
-    {word:"alacrity",meaning:"brisk and cheerful readiness"},
-    {word:"alienation",meaning:"the state of being isolated from a group or activity"},
-    {word:"alliteration",meaning:"the occurrence of the same letter at the start of adjacent words"},
-    {word:"ambiguity",meaning:"the quality of being open to more than one interpretation"},
-    {word:"ambivalent",meaning:"having mixed feelings about someone or something"},
-    {word:"ameliorate",meaning:"to make something bad or unsatisfactory better"},
-    {word:"anachronism",meaning:"a thing belonging to a period other than that in which it exists"},
-    {word:"antagonism",meaning:"active hostility or opposition"},
-    {word:"antiquated",meaning:"old-fashioned or outdated"},
-    {word:"apocryphal",meaning:"of doubtful authenticity; probably not true"},
-    {word:"apprehension",meaning:"anxiety or fear that something bad will happen"},
-    {word:"arbitrary",meaning:"based on random choice rather than reason"},
-    {word:"articulate",meaning:"having or showing the ability to speak fluently"},
-    {word:"aspiration",meaning:"a hope or ambition of achieving something"},
-    {word:"assiduous",meaning:"showing great care and perseverance"},
-    {word:"audacious",meaning:"showing a willingness to take surprisingly bold risks"},
-    {word:"auspicious",meaning:"conducive to success; giving promise of success"},
-    {word:"authoritarian",meaning:"favouring or enforcing strict obedience to authority"},
-    {word:"autonomous",meaning:"acting independently and having the freedom to do so"},
-    {word:"belligerent",meaning:"hostile and aggressive; engaged in war"},
-    {word:"benevolent",meaning:"well meaning and kindly"},
-    {word:"bureaucratic",meaning:"relating to excessive official routine or procedure"},
-    {word:"camaraderie",meaning:"mutual trust and friendship among people who spend time together"},
-    {word:"candor",meaning:"the quality of being open and honest"},
-    {word:"catastrophe",meaning:"an event causing great damage or suffering"},
-    {word:"caustic",meaning:"able to burn; sarcastic in a scathing way"},
-    {word:"circumspect",meaning:"wary and unwilling to take risks"},
-    {word:"clandestine",meaning:"kept secret or done secretively"},
-    {word:"cognizant",meaning:"having knowledge or awareness of something"},
-    {word:"commemorate",meaning:"to recall and show respect for someone in a ceremony"},
-    {word:"compulsory",meaning:"required by law or a rule; obligatory"},
-    {word:"contemptuous",meaning:"showing contempt; scornful"},
-    {word:"contentious",meaning:"causing or likely to cause argument; controversial"},
-    {word:"controversial",meaning:"giving rise to disagreement or argument"},
-    {word:"credulous",meaning:"having or showing too great a readiness to believe things"},
-    {word:"culmination",meaning:"the highest or climactic point of something"},
-    {word:"cumbersome",meaning:"large or heavy and therefore difficult to handle"},
-    {word:"debilitating",meaning:"making someone very weak and infirm"},
-    {word:"deceptive",meaning:"giving an appearance or impression different from the true one"},
-    {word:"deference",meaning:"humble submission and respect"},
-    {word:"deleterious",meaning:"causing harm or damage"},
-    {word:"demagogue",meaning:"a political leader who seeks support by appealing to desires"},
-    {word:"deprivation",meaning:"the damaging lack of material benefits"},
-    {word:"despondent",meaning:"in low spirits from loss of hope or courage"},
-    {word:"dichotomy",meaning:"a division or contrast between two opposed things"},
-    {word:"diligent",meaning:"having or showing care and conscientiousness"},
-    {word:"discernible",meaning:"able to be discerned; perceptible"},
-    {word:"discrepancy",meaning:"a lack of compatibility between facts or claims"},
-    {word:"disdainful",meaning:"showing contempt or lack of respect"},
-    {word:"disillusion",meaning:"to cause to realise that a belief is false"},
-    {word:"disparate",meaning:"essentially different in kind; not able to be compared"},
-    {word:"dissolution",meaning:"the closing down or ending of an assembly or organisation"},
-    {word:"divergent",meaning:"tending to be different or develop in different directions"},
-    {word:"eccentric",meaning:"unconventional and slightly strange"},
-    {word:"efficacious",meaning:"successful in producing a desired or intended result"},
-    {word:"eloquence",meaning:"fluent or persuasive speaking or writing"},
-    {word:"empirical",meaning:"based on observation or experience rather than theory"},
-    {word:"enigmatic",meaning:"difficult to interpret or understand; mysterious"},
-    {word:"ephemeral",meaning:"lasting for a very short time"},
-    {word:"equivocal",meaning:"open to more than one interpretation; uncertain"},
-    {word:"exacerbate",meaning:"to make a problem worse"},
-    {word:"exasperate",meaning:"to irritate and frustrate someone intensely"},
-    {word:"exorbitant",meaning:"unreasonably high in price"},
-    {word:"expeditious",meaning:"done with speed and efficiency"},
-    {word:"facetious",meaning:"treating serious issues with inappropriate humour"},
-    {word:"fallacious",meaning:"based on a mistaken belief"},
-    {word:"fastidious",meaning:"very attentive to accuracy and detail"},
-    {word:"flamboyant",meaning:"tending to attract attention because of exuberance"},
-    {word:"formidable",meaning:"inspiring fear or respect through impressive size"},
-    {word:"fundamental",meaning:"forming a necessary base; of central importance"},
-    {word:"gregarious",meaning:"fond of company; sociable"},
-    {word:"hierarchy",meaning:"a system in which people are ranked above one another"},
-    {word:"hypocritical",meaning:"behaving in ways that contradict stated beliefs"},
-    {word:"iconoclast",meaning:"a person who attacks cherished beliefs or institutions"},
-    {word:"impeccable",meaning:"in accordance with the highest standards; faultless"},
-    {word:"impervious",meaning:"not allowing fluid to pass through; unable to be affected"},
-    {word:"incongruent",meaning:"not in harmony or keeping with the surroundings"},
-    {word:"incorrigible",meaning:"not able to be corrected or reformed"},
-    {word:"indignant",meaning:"feeling or showing anger at unjust treatment"},
-    {word:"inevitable",meaning:"certain to happen; unavoidable"},
-    {word:"inexorable",meaning:"impossible to stop or prevent"},
-    {word:"inflammatory",meaning:"tending to arouse anger or strong feeling"},
-    {word:"ingenuity",meaning:"the quality of being clever, original, and inventive"},
-    {word:"innocuous",meaning:"not harmful or offensive"},
-    {word:"insidious",meaning:"proceeding in a gradual but harmful way"},
-    {word:"intransigent",meaning:"unwilling to change views or agree to compromise"},
-    {word:"irrefutable",meaning:"impossible to deny or disprove"},
-    {word:"juxtaposition",meaning:"placing two things close together to highlight contrast"},
-    {word:"laconic",meaning:"using very few words"},
-    {word:"languorous",meaning:"having a pleasantly relaxed quality"},
-    {word:"meticulous",meaning:"showing great attention to detail or correctness"},
-    {word:"monotonous",meaning:"dull, tedious, and repetitious"},
-    {word:"nefarious",meaning:"wicked or criminal"},
-    {word:"negligence",meaning:"failure to take proper care of something"},
-    {word:"obstinate",meaning:"stubbornly refusing to change one's opinion"},
-    {word:"ominous",meaning:"giving the impression that something bad is about to happen"},
-    {word:"ostentatious",meaning:"characterised by a vulgar display of wealth"},
-    {word:"paradoxical",meaning:"seeming absurd or self-contradictory"},
-    {word:"pejorative",meaning:"expressing contempt or disapproval"},
-    {word:"perfunctory",meaning:"carried out with minimal effort; superficial"},
-    {word:"pervasive",meaning:"spreading widely throughout an area or group"},
-    {word:"pessimistic",meaning:"tending to see the worst aspect of things"},
-    {word:"pragmatic",meaning:"dealing with things sensibly and realistically"},
-    {word:"precarious",meaning:"not securely held; dependent on chance"},
-    {word:"pretentious",meaning:"attempting to impress by affecting greater importance"},
-    {word:"prodigious",meaning:"remarkably or impressively great in extent or size"},
-    {word:"proficiency",meaning:"a high degree of competence or skill"},
-    {word:"provocative",meaning:"causing anger or another strong reaction deliberately"},
-    {word:"reciprocal",meaning:"given or felt by each towards the other; mutual"},
-    {word:"relinquish",meaning:"to voluntarily cease to keep or claim something"},
-    {word:"reminiscent",meaning:"tending to remind one of something"},
-    {word:"repercussion",meaning:"an unintended consequence of an event or action"},
-    {word:"resilience",meaning:"the capacity to recover quickly from difficulties"},
-    {word:"reverence",meaning:"deep respect for someone or something"},
-    {word:"sagacious",meaning:"having or showing keen mental discernment"},
-    {word:"skepticism",meaning:"a doubting or questioning attitude"},
-    {word:"sophisticated",meaning:"having a refined knowledge of the world"},
-    {word:"spontaneous",meaning:"performed or occurring without planning"},
-    {word:"superficial",meaning:"existing or occurring at or on the surface; not thorough"},
-    {word:"surveillance",meaning:"close observation, especially of a suspected person"},
-    {word:"systematic",meaning:"done or acting according to a fixed plan or system"},
-    {word:"temperamental",meaning:"liable to unreasonable changes of mood"},
-    {word:"tenacious",meaning:"tending to keep a firm hold; persistent"},
-    {word:"treacherous",meaning:"guilty of betrayal; dangerous because of hidden hazards"},
-    {word:"turbulent",meaning:"characterised by conflict, disorder, or confusion"},
-    {word:"unambiguous",meaning:"not open to more than one interpretation"},
-    {word:"unprecedented",meaning:"never done or known before"},
-    {word:"vacillate",meaning:"to waver between different opinions or actions"},
-    {word:"vehement",meaning:"showing strong feeling; forceful or passionate"},
-    {word:"versatile",meaning:"able to adapt to many different functions"},
-    {word:"vindictive",meaning:"having a strong desire to harm someone who has hurt you"},
-    {word:"vulnerability",meaning:"the quality of being exposed to the possibility of attack"},
-    {word:"whimsical",meaning:"playfully quaint or fanciful"}
-  ]
+  easy:[{word:"able",meaning:"having the skill or means to do something"},{word:"acid",meaning:"a chemical substance with a pH less than 7"},{word:"area",meaning:"a part of a place, town, or country"},{word:"army",meaning:"a large organized group of soldiers"},{word:"back",meaning:"the rear surface of the human body"},{word:"ball",meaning:"a round object used in games and sports"},{word:"band",meaning:"a flat strip used to fasten things together"},{word:"bank",meaning:"an institution that manages money"},{word:"base",meaning:"the lowest part or foundation of something"},{word:"bear",meaning:"a large heavy mammal with thick fur"},{word:"beat",meaning:"to strike repeatedly; to defeat"},{word:"bell",meaning:"a hollow metal object that makes a ringing sound"},{word:"best",meaning:"of the most excellent or desirable type"},{word:"bird",meaning:"a warm-blooded animal with feathers and wings"},{word:"blow",meaning:"to move air with force; a hard hit"},{word:"blue",meaning:"the colour of the sky on a clear day"},{word:"boat",meaning:"a small vessel for travelling on water"},{word:"body",meaning:"the physical structure of a person or animal"},{word:"bone",meaning:"a hard rigid tissue forming the skeleton"},{word:"book",meaning:"a written or printed work bound together"},{word:"bold",meaning:"showing a willingness to take risks; not hesitant"},{word:"born",meaning:"having come into existence through birth"},{word:"bowl",meaning:"a round deep dish used for food or liquid"},{word:"burn",meaning:"to be on fire; to destroy with fire"},{word:"busy",meaning:"having a great deal to do; occupied"},{word:"calm",meaning:"not showing nervousness; quiet and peaceful"},{word:"card",meaning:"a small piece of stiff paper with information"},{word:"care",meaning:"the provision of what is needed for health"},{word:"case",meaning:"an instance of a situation; a container"},{word:"cash",meaning:"money in coins or notes"},{word:"cell",meaning:"the smallest unit of a living organism"},{word:"chat",meaning:"an informal friendly conversation"},{word:"chip",meaning:"a small piece cut or broken off something"},{word:"city",meaning:"a large town with special status"},{word:"clay",meaning:"a stiff sticky fine-grained soil used for pottery"},{word:"coal",meaning:"a combustible black rock used as fuel"},{word:"coat",meaning:"an outer garment worn outdoors"},{word:"code",meaning:"a system of words or symbols representing information"},{word:"coin",meaning:"a flat disc of metal used as currency"},{word:"cold",meaning:"of or at a low temperature"},{word:"come",meaning:"to move or travel towards the speaker"},{word:"cook",meaning:"to prepare food by heating it"},{word:"cool",meaning:"moderately cold; fashionably attractive"},{word:"cope",meaning:"to deal effectively with something difficult"},{word:"copy",meaning:"a thing made to be similar or identical to another"},{word:"core",meaning:"the most important part of something"},{word:"cost",meaning:"the amount paid or required for something"},{word:"cure",meaning:"a treatment that relieves or removes a disease"},{word:"dark",meaning:"with little or no light present"},{word:"data",meaning:"facts and statistics collected for analysis"},{word:"deal",meaning:"an agreement made between two parties"},{word:"debt",meaning:"a sum of money owed to someone"},{word:"deep",meaning:"extending far down from the top or surface"},{word:"deny",meaning:"to state that something is not true"},{word:"diet",meaning:"the kinds of food a person habitually eats"},{word:"door",meaning:"a hinged barrier used to close an entrance"},{word:"dose",meaning:"a quantity of medicine taken at one time"},{word:"draw",meaning:"to produce a picture by making lines on paper"},{word:"drop",meaning:"a small round portion of liquid; to fall"},{word:"drum",meaning:"a percussion instrument played by striking"},{word:"dust",meaning:"fine dry powder of earth or other matter"},{word:"duty",meaning:"a moral or legal obligation"},{word:"earn",meaning:"to receive money in return for work done"},{word:"ease",meaning:"absence of difficulty or effort"},{word:"edge",meaning:"the outside limit of an object or surface"},{word:"even",meaning:"flat and smooth; equal in number or amount"},{word:"evil",meaning:"profoundly immoral and wicked"},{word:"face",meaning:"the front part of the head"},{word:"fact",meaning:"a thing that is known to be true"},{word:"fail",meaning:"to be unsuccessful in achieving a goal"},{word:"fall",meaning:"to move downward quickly and suddenly"},{word:"fame",meaning:"the state of being known by many people"},{word:"farm",meaning:"an area of land used for growing crops"},{word:"fast",meaning:"moving at high speed; firmly fixed"},{word:"fear",meaning:"an unpleasant emotion caused by danger"},{word:"feel",meaning:"to be aware of through the sense of touch"},{word:"file",meaning:"a folder for keeping loose papers organised"},{word:"fill",meaning:"to put something into a space until it is full"},{word:"film",meaning:"a story recorded as moving images"},{word:"find",meaning:"to discover by chance or by searching"},{word:"fire",meaning:"combustion that gives off light and heat"},{word:"firm",meaning:"having a solid almost unyielding surface"},{word:"fish",meaning:"a cold-blooded vertebrate living in water"},{word:"flag",meaning:"a piece of cloth used as a symbol or signal"},{word:"flat",meaning:"smooth and even; having no raised areas"},{word:"flow",meaning:"to move along steadily and continuously"},{word:"fold",meaning:"to bend something over on itself"},{word:"food",meaning:"any nutritious substance eaten to maintain life"},{word:"foot",meaning:"the lower extremity of the leg below the ankle"},{word:"fork",meaning:"a utensil with two or more prongs"},{word:"form",meaning:"the visible shape or configuration of something"},{word:"four",meaning:"the number equivalent to 3 plus 1"},{word:"free",meaning:"not under the control or power of another"},{word:"fuel",meaning:"material burned to produce heat or power"},{word:"full",meaning:"containing as much or as many as possible"},{word:"gain",meaning:"to obtain or secure something desirable"},{word:"game",meaning:"a form of play or sport with rules"},{word:"gate",meaning:"a hinged barrier in a wall or fence"},{word:"gift",meaning:"a thing given willingly without payment"},{word:"give",meaning:"to freely transfer possession of something"},{word:"goal",meaning:"the object of ambition; a score in sport"},{word:"gold",meaning:"a yellow precious metal used in jewellery"},{word:"good",meaning:"to be desired or approved of; of high quality"},{word:"grab",meaning:"to grasp or seize suddenly and roughly"},{word:"grip",meaning:"to take and keep a firm hold of something"},{word:"grow",meaning:"to undergo natural development and increase"},{word:"half",meaning:"either of two equal parts of something divided"},{word:"hall",meaning:"the room just inside the front entrance of a house"},{word:"hand",meaning:"the end part of a person's arm beyond the wrist"},{word:"hang",meaning:"to suspend or be suspended from above"},{word:"hard",meaning:"solid and rigid; not easy to do or understand"},{word:"harm",meaning:"physical injury or damage to someone"},{word:"hate",meaning:"to feel intense dislike for someone"},{word:"head",meaning:"the upper part of the human body"},{word:"heal",meaning:"to become sound or healthy again"},{word:"heat",meaning:"the quality of being hot; high temperature"},{word:"help",meaning:"to make it easier for someone to do something"},{word:"here",meaning:"in, at, or to this place or position"},{word:"hero",meaning:"a person admired for courage and noble qualities"},{word:"hide",meaning:"to put or keep out of sight"},{word:"high",meaning:"of great vertical extent; far above ground"},{word:"hill",meaning:"a naturally raised area of land"},{word:"hint",meaning:"a slight or indirect indication or suggestion"},{word:"hold",meaning:"to keep or maintain in a specified position"},{word:"hole",meaning:"a hollow place in a solid body or surface"},{word:"home",meaning:"the place where one lives permanently"},{word:"hope",meaning:"a feeling of expectation and desire for something"},{word:"hour",meaning:"a period of time equal to sixty minutes"},{word:"huge",meaning:"extremely large in size or amount"},{word:"hunt",meaning:"to pursue and kill wild animals for food"},{word:"hurt",meaning:"to cause pain or injury to someone"},{word:"idea",meaning:"a thought or suggestion as to a possible action"},{word:"iron",meaning:"a strong hard magnetic silvery-grey metal"},{word:"item",meaning:"an individual article or unit in a list"},{word:"jump",meaning:"to push oneself off the ground using legs"},{word:"just",meaning:"based on what is morally right and fair"},{word:"keep",meaning:"to have or retain possession of something"},{word:"kill",meaning:"to cause the death of a living thing"},{word:"kind",meaning:"having a friendly and generous nature"},{word:"king",meaning:"the male ruler of an independent state"},{word:"lack",meaning:"the state of being without something needed"},{word:"lake",meaning:"a large body of water surrounded by land"},{word:"land",meaning:"the part of the earth not covered by water"},{word:"last",meaning:"coming after all others in time or order"},{word:"late",meaning:"doing something after the expected time"},{word:"lead",meaning:"to be in charge of; a heavy grey metal"},{word:"leaf",meaning:"a flattened green structure on a plant stem"},{word:"left",meaning:"on or towards the side opposite the right"},{word:"less",meaning:"a smaller amount; not as much as before"},{word:"lift",meaning:"to raise to a higher position or level"},{word:"like",meaning:"to find agreeable or enjoyable; similar to"},{word:"line",meaning:"a long narrow mark or band"},{word:"link",meaning:"a relationship between two things or situations"},{word:"list",meaning:"a number of connected items written in order"},{word:"live",meaning:"to remain alive; to make one's home somewhere"},{word:"load",meaning:"a heavy or bulky thing being carried"},{word:"loan",meaning:"a sum of money lent at interest"},{word:"lock",meaning:"a mechanism for keeping a door fastened"},{word:"long",meaning:"measuring a great distance from end to end"},{word:"look",meaning:"to direct one's gaze towards something"},{word:"loss",meaning:"the fact of no longer having something"},{word:"love",meaning:"an intense feeling of deep affection"},{word:"luck",meaning:"success apparently brought by chance"},{word:"made",meaning:"formed by making; manufactured or produced"},{word:"mail",meaning:"letters and packages sent by post"},{word:"main",meaning:"chief in size or importance"},{word:"make",meaning:"to form something by putting parts together"},{word:"many",meaning:"a large number of people or things"},{word:"mark",meaning:"a small area on a surface differing in colour"},{word:"mass",meaning:"a large body of matter with no definite shape"},{word:"meal",meaning:"any of the regular occasions when food is eaten"},{word:"mean",meaning:"intending to convey; unkind or unfair"},{word:"meet",meaning:"to come into contact or be introduced to"},{word:"mild",meaning:"not severe, serious, or harsh"},{word:"mile",meaning:"a unit of distance equal to 1760 yards"},{word:"mind",meaning:"the element enabling consciousness and thought"},{word:"miss",meaning:"to fail to hit, reach, or catch something"},{word:"mode",meaning:"a way or manner in which something is done"},{word:"mood",meaning:"a temporary state of mind or feeling"},{word:"more",meaning:"a greater or additional amount or degree"},{word:"most",meaning:"greatest in amount, extent, or degree"},{word:"move",meaning:"to go in a specified direction or manner"},{word:"much",meaning:"a great amount or degree of something"},{word:"must",meaning:"be obliged to; expressing necessity or certainty"},{word:"myth",meaning:"a traditional story explaining a natural phenomenon"},{word:"name",meaning:"a word by which a person or thing is known"},{word:"need",meaning:"to require something because it is essential"},{word:"next",meaning:"coming immediately after the present one"},{word:"nice",meaning:"giving pleasure or satisfaction; pleasant"},{word:"nine",meaning:"the number equivalent to 8 plus 1"},{word:"none",meaning:"not any; no one; not a single one"},{word:"note",meaning:"a brief written record; a short informal letter"},{word:"open",meaning:"allowing access or a view through an area"},{word:"over",meaning:"extending directly upward from; more than"},{word:"pace",meaning:"a single step taken when walking or running"},{word:"pack",meaning:"to fill a bag with clothes and other things"},{word:"page",meaning:"one side of a leaf of a book or magazine"},{word:"pain",meaning:"physical suffering caused by illness or injury"},{word:"pair",meaning:"a set of two things used together"},{word:"park",meaning:"a large public garden or area of land"},{word:"part",meaning:"a piece or segment of something larger"},{word:"pass",meaning:"to move past; to be successful in a test"},{word:"past",meaning:"gone by in time; no longer existing"},{word:"path",meaning:"a way or track laid for walking"},{word:"peak",meaning:"the pointed top of a mountain"},{word:"pick",meaning:"to take hold of and remove from a position"},{word:"plan",meaning:"a detailed proposal for doing something"},{word:"play",meaning:"to engage in activity for enjoyment"},{word:"plot",meaning:"a plan made in secret; the events of a story"},{word:"plus",meaning:"with the addition of; a positive quantity"},{word:"poem",meaning:"a piece of writing with attention to sound and feeling"},{word:"pool",meaning:"a small area of still water; for swimming"},{word:"poor",meaning:"lacking sufficient money to live comfortably"},{word:"port",meaning:"a town or city with a harbour for ships"},{word:"pose",meaning:"to present or constitute a problem or threat"},{word:"post",meaning:"letters and parcels sent by mail"},{word:"pull",meaning:"to exert force so something moves toward one"},{word:"pump",meaning:"a mechanical device for moving fluids"},{word:"pure",meaning:"not mixed or adulterated with any other substance"},{word:"push",meaning:"to exert force to move something away"},{word:"race",meaning:"a competition of speed; a group sharing heritage"},{word:"rage",meaning:"violent uncontrollable anger"},{word:"rain",meaning:"water falling in drops from clouds"},{word:"rank",meaning:"a position in a hierarchy or scale"},{word:"rare",meaning:"not occurring very often; unusually good"},{word:"rate",meaning:"a measure or quantity relative to another"},{word:"read",meaning:"to look at and comprehend written text"},{word:"rely",meaning:"to depend on with full trust or confidence"},{word:"rent",meaning:"a tenant's regular payment to a landlord"},{word:"rest",meaning:"to cease work in order to relax or recover"},{word:"rich",meaning:"having a great deal of money or assets"},{word:"ride",meaning:"to sit on and control a horse or bicycle"},{word:"ring",meaning:"a small circular band worn on a finger"},{word:"risk",meaning:"a situation involving exposure to danger"},{word:"road",meaning:"a wide way leading from one place to another"},{word:"role",meaning:"the function assumed by someone in a situation"},{word:"roof",meaning:"the structure forming the upper covering of a building"},{word:"room",meaning:"a part of a building enclosed by walls"},{word:"root",meaning:"the part of a plant that attaches it to the ground"},{word:"rope",meaning:"a length of thick strong cord made of fibres"},{word:"ruin",meaning:"the physical destruction of something; to damage"},{word:"rule",meaning:"a regulation governing conduct or procedure"},{word:"rush",meaning:"to move with urgency or speed somewhere"},{word:"safe",meaning:"protected from danger, harm, or risk"},{word:"sail",meaning:"a piece of material to catch wind on a boat"},{word:"salt",meaning:"a white crystalline substance used to season food"},{word:"same",meaning:"identical; not different or other"},{word:"sand",meaning:"a loose granular substance from rock erosion"},{word:"save",meaning:"to keep safe from harm or danger"},{word:"seal",meaning:"a device used for stamping; a marine mammal"},{word:"seed",meaning:"a plant's unit of reproduction"},{word:"seek",meaning:"to try to find or obtain something"},{word:"self",meaning:"a person's essential being distinguishing them"},{word:"sell",meaning:"to give something in exchange for money"},{word:"send",meaning:"to cause something to go to a destination"},{word:"shed",meaning:"a simple roofed structure; to cast off"},{word:"ship",meaning:"a large boat for travelling on water"},{word:"shoe",meaning:"a covering for the foot with a solid sole"},{word:"shop",meaning:"a building where goods are sold to customers"},{word:"shot",meaning:"the firing of a gun; an attempt or try"},{word:"show",meaning:"to be or allow to be seen; a performance"},{word:"sick",meaning:"affected by physical or mental illness"},{word:"side",meaning:"a position to the left or right of something"},{word:"sign",meaning:"an object or event indicating something else"},{word:"sing",meaning:"to make musical sounds with the voice"},{word:"sink",meaning:"to go down below the surface of liquid"},{word:"size",meaning:"the relative extent of something; how big it is"},{word:"skin",meaning:"the outer covering of the human body"},{word:"slow",meaning:"moving at less than normal speed"},{word:"snow",meaning:"frozen water vapour falling as white flakes"},{word:"soft",meaning:"easy to mould or compress; gentle and quiet"},{word:"soil",meaning:"the upper layer of earth in which plants grow"},{word:"some",meaning:"an unspecified amount or number of something"},{word:"song",meaning:"a short poem or words set to music"},{word:"soul",meaning:"the spiritual part of a human being"},{word:"soup",meaning:"a liquid dish made by boiling meat or vegetables"},{word:"spot",meaning:"a small round mark on a surface"},{word:"star",meaning:"a fixed luminous point in the night sky"},{word:"stay",meaning:"to remain in a specified place"},{word:"step",meaning:"an act of lifting and setting down one's foot"},{word:"stop",meaning:"to come to an end; to cease movement"},{word:"suit",meaning:"a set of outer clothes of matching fabric"},{word:"swim",meaning:"to propel oneself through water using the body"},{word:"tail",meaning:"the rear end of an animal's body"},{word:"tall",meaning:"of great or more than average height"},{word:"tank",meaning:"a large container for liquid; an armoured vehicle"},{word:"task",meaning:"a piece of work to be done or undertaken"},{word:"tent",meaning:"a portable shelter made of cloth or canvas"},{word:"term",meaning:"a word used to describe something; a fixed period"},{word:"test",meaning:"a procedure to establish quality or reliability"},{word:"text",meaning:"written or printed words; a phone message"},{word:"tide",meaning:"the rise and fall of sea levels"},{word:"time",meaning:"the indefinite continued progress of existence"},{word:"tire",meaning:"to feel in need of rest or sleep"},{word:"told",meaning:"past tense of tell; communicated information"},{word:"tone",meaning:"the quality of a sound; a shade of colour"},{word:"tool",meaning:"a device used to carry out a function"},{word:"tour",meaning:"a journey visiting several places for pleasure"},{word:"town",meaning:"a built-up area with a name and boundaries"},{word:"tree",meaning:"a woody perennial plant with a trunk and branches"},{word:"trip",meaning:"a journey to a place; to lose one's balance"},{word:"true",meaning:"in accordance with fact or reality"},{word:"tune",meaning:"a melody; to adjust an instrument to correct pitch"},{word:"turn",meaning:"to move in a circular direction"},{word:"type",meaning:"a category of things with common characteristics"},{word:"unit",meaning:"an individual thing regarded as a single entity"},{word:"used",meaning:"having already been used; accustomed to something"},{word:"vary",meaning:"to differ in some way; to make different"},{word:"vast",meaning:"of very great extent or quantity"},{word:"verb",meaning:"a word used to describe an action or state"},{word:"view",meaning:"the ability to see something; an opinion held"},{word:"vine",meaning:"a climbing or trailing plant"},{word:"void",meaning:"not valid or legally binding; an empty space"},{word:"wade",meaning:"to walk with effort through water or mud"},{word:"wage",meaning:"a fixed regular payment for work done"},{word:"wake",meaning:"to emerge from sleep; a trail of disturbed water"},{word:"walk",meaning:"to move at a regular pace by lifting the feet"},{word:"wall",meaning:"a continuous vertical brick or stone structure"},{word:"warm",meaning:"of a moderately high temperature"},{word:"wave",meaning:"a ridge of water moving along the surface"},{word:"weak",meaning:"lacking the power to perform demanding tasks"},{word:"wide",meaning:"of great or more than average width"},{word:"wild",meaning:"living or growing in the natural environment"},{word:"will",meaning:"expressing the future tense; a legal document"},{word:"wind",meaning:"the perceptible natural movement of air"},{word:"wine",meaning:"an alcoholic drink made from fermented grapes"},{word:"wing",meaning:"a modified forelimb of a bird used for flying"},{word:"wish",meaning:"to feel or express a desire for something"},{word:"wolf",meaning:"a wild carnivorous mammal related to the dog"},{word:"wood",meaning:"the hard fibrous material of a tree trunk"},{word:"word",meaning:"a single unit of language"},{word:"work",meaning:"activity involving mental or physical effort"},{word:"wrap",meaning:"to cover or enclose in paper or soft material"},{word:"yard",meaning:"a unit of length equal to 3 feet"},{word:"your",meaning:"belonging to the person being addressed"}],
+  hard:[{word:"abandon",meaning:"to cease to support or look after; to leave behind"},{word:"ability",meaning:"possession of the means or skill to do something"},{word:"absence",meaning:"the state of being away from a place or person"},{word:"absolute",meaning:"not qualified or diminished in any way; total"},{word:"abstract",meaning:"existing in thought or as an idea but not physical"},{word:"abundant",meaning:"existing or available in large quantities; plentiful"},{word:"academic",meaning:"relating to education and scholarship"},{word:"accuracy",meaning:"the quality or state of being correct or precise"},{word:"acoustic",meaning:"relating to sound or the sense of hearing"},{word:"adequate",meaning:"satisfactory or acceptable in quality or quantity"},{word:"advocate",meaning:"to publicly recommend or support something"},{word:"ambitious",meaning:"having a strong desire and determination to succeed"},{word:"announce",meaning:"to make a public and formal declaration of something"},{word:"apparent",meaning:"clearly visible or understood; obvious to all"},{word:"appetite",meaning:"a natural desire to satisfy a bodily need"},{word:"approach",meaning:"to come near to something in distance or quality"},{word:"argument",meaning:"an exchange of diverging views; a reason given"},{word:"artifact",meaning:"an object made by a human being"},{word:"attached",meaning:"joined or connected to something else"},{word:"attitude",meaning:"a settled way of thinking about something"},{word:"authentic",meaning:"of undisputed origin; genuine and real"},{word:"balanced",meaning:"keeping or showing a balance; stable and fair"},{word:"behavior",meaning:"the way in which one acts or conducts oneself"},{word:"beneath",meaning:"extending or directly below something"},{word:"boundary",meaning:"a line marking the limits of an area"},{word:"capable",meaning:"having the ability or quality to do something"},{word:"capture",meaning:"to take into one's possession by force"},{word:"careful",meaning:"making sure of avoiding potential problems"},{word:"caution",meaning:"care taken to avoid danger or mistakes"},{word:"certain",meaning:"known for sure; established beyond doubt"},{word:"chronic",meaning:"persisting for a long time; constantly recurring"},{word:"clarity",meaning:"the quality of being coherent and intelligible"},{word:"classic",meaning:"judged over time to be of the highest quality"},{word:"climate",meaning:"the weather conditions prevailing in an area"},{word:"closure",meaning:"the act of closing something; a sense of resolution"},{word:"coherent",meaning:"logical and consistent; forming a unified whole"},{word:"collapse",meaning:"to suddenly fall down or give way completely"},{word:"compete",meaning:"to strive to gain something by defeating others"},{word:"complex",meaning:"consisting of many different parts; not simple"},{word:"concept",meaning:"an abstract idea or general notion"},{word:"concrete",meaning:"existing in material form; real and tangible"},{word:"conflict",meaning:"a serious disagreement; armed fighting"},{word:"consent",meaning:"permission for something to happen or be done"},{word:"context",meaning:"the circumstances surrounding an event or statement"},{word:"convert",meaning:"to cause to change in form or character"},{word:"courage",meaning:"the ability to do something that frightens one"},{word:"creative",meaning:"relating to imagination and the use of original ideas"},{word:"crucial",meaning:"decisive or critical in importance"},{word:"culture",meaning:"the ideas, customs, and social behaviour of a society"},{word:"curious",meaning:"eager to know or learn something new"},{word:"decline",meaning:"to become smaller or fewer; to politely refuse"},{word:"deliver",meaning:"to bring and hand over to the proper recipient"},{word:"despite",meaning:"without being affected by; notwithstanding"},{word:"develop",meaning:"to grow or cause to grow and become more mature"},{word:"devoted",meaning:"very loving or loyal to a person or cause"},{word:"dilemma",meaning:"a situation where a difficult choice must be made"},{word:"diverse",meaning:"showing a great deal of variety; very different"},{word:"dynamic",meaning:"characterised by constant change and activity"},{word:"economy",meaning:"the wealth and resources of a country or region"},{word:"element",meaning:"a fundamental part of something larger"},{word:"embrace",meaning:"to hold someone closely; to accept willingly"},{word:"emotion",meaning:"a strong feeling such as joy, anger, or sadness"},{word:"enhance",meaning:"to intensify or increase the quality of something"},{word:"enormous",meaning:"very large in size, quantity, or extent"},{word:"essence",meaning:"the intrinsic nature; the most important quality"},{word:"ethical",meaning:"relating to moral principles; morally correct"},{word:"evident",meaning:"plain or obvious; clearly seen or understood"},{word:"examine",meaning:"to inspect someone or something closely"},{word:"explore",meaning:"to travel through an unfamiliar area to learn"},{word:"express",meaning:"to convey a thought or feeling in words"},{word:"extreme",meaning:"reaching a high or the highest degree possible"},{word:"failure",meaning:"lack of success; the omission of expected action"},{word:"feature",meaning:"a distinctive attribute or aspect of something"},{word:"fiction",meaning:"literature describing imaginary events and people"},{word:"fragile",meaning:"easily broken or damaged; delicate"},{word:"freedom",meaning:"the power to act, speak, or think without hindrance"},{word:"genuine",meaning:"truly what something is said to be; authentic"},{word:"harmful",meaning:"causing or likely to cause harm to someone"},{word:"history",meaning:"the study of past events; a past record"},{word:"improve",meaning:"to make or become better than before"},{word:"include",meaning:"to comprise as part of a whole"},{word:"initial",meaning:"existing or occurring at the very beginning"},{word:"insight",meaning:"the capacity to gain accurate and deep understanding"},{word:"inspire",meaning:"to fill someone with the ability to do something"},{word:"intense",meaning:"of extreme force, degree, or strength"},{word:"involve",meaning:"to have as a necessary part or result"},{word:"justify",meaning:"to show or prove to be right or reasonable"},{word:"language",meaning:"the method of human communication using words"},{word:"logical",meaning:"of or according to the rules of logic"},{word:"loyalty",meaning:"the quality of being loyal to someone or something"},{word:"maintain",meaning:"to cause or enable something to continue"},{word:"massive",meaning:"large and heavy or solid; exceptionally large"},{word:"meaning",meaning:"what is intended to be expressed or signified"},{word:"migrate",meaning:"to move from one region or habitat to another"},{word:"natural",meaning:"existing in or derived from nature; not artificial"},{word:"network",meaning:"a system of things or people that are interconnected"},{word:"neutral",meaning:"not supporting either side in a conflict"},{word:"obvious",meaning:"easily perceived or understood; clear to all"},{word:"operate",meaning:"to control the functioning of a machine or system"},{word:"organic",meaning:"relating to or derived from living matter"},{word:"outcome",meaning:"the way a thing turns out; a consequence"},{word:"partial",meaning:"existing only in part; incomplete"},{word:"passion",meaning:"a strong and barely controllable emotion"},{word:"pattern",meaning:"a repeated design; a regular way of doing something"},{word:"perform",meaning:"to carry out or accomplish an action or task"},{word:"persist",meaning:"to continue firmly in an opinion or course of action"},{word:"popular",meaning:"liked or admired by many people"},{word:"possess",meaning:"to have as belonging to one; to own"},{word:"predict",meaning:"to say that something will happen in the future"},{word:"prepare",meaning:"to make ready for use or consideration"},{word:"produce",meaning:"to make or manufacture from components"},{word:"promote",meaning:"to further the progress of something"},{word:"propose",meaning:"to put forward an idea for consideration"},{word:"protect",meaning:"to keep safe from harm or injury"},{word:"provide",meaning:"to make available for use; to supply"},{word:"quality",meaning:"the standard of something measured against others"},{word:"rebuild",meaning:"to build again after it has been damaged"},{word:"reflect",meaning:"to throw back light; to think carefully about"},{word:"release",meaning:"to allow to move or act freely"},{word:"replace",meaning:"to take the place of something or someone"},{word:"require",meaning:"to need something for a purpose"},{word:"resolve",meaning:"to settle or find a solution to something"},{word:"respect",meaning:"a feeling of deep admiration for someone"},{word:"respond",meaning:"to say something in reply; to react"},{word:"routine",meaning:"a sequence of actions regularly followed"},{word:"satisfy",meaning:"to meet the expectations or needs of someone"},{word:"science",meaning:"the intellectual study of the physical world"},{word:"section",meaning:"any of the distinct parts into which something is divided"},{word:"segment",meaning:"each of the parts into which something is divided"},{word:"service",meaning:"the action of helping or doing work for someone"},{word:"society",meaning:"the community of people living in a country"},{word:"solution",meaning:"a means of solving a problem or difficulty"},{word:"specific",meaning:"clearly defined or identified; precise"},{word:"subject",meaning:"a person or thing being discussed or studied"},{word:"support",meaning:"to bear all or part of the weight of something"},{word:"surface",meaning:"the outside or uppermost layer of something"},{word:"sustain",meaning:"to strengthen or support physically or mentally"},{word:"tension",meaning:"mental or emotional strain; a strained relationship"},{word:"thought",meaning:"an idea or opinion produced by thinking"},{word:"through",meaning:"moving in one side and out of the other"},{word:"typical",meaning:"having the distinctive qualities of a particular type"},{word:"visible",meaning:"able to be seen; within eyesight"},{word:"willing",meaning:"ready, eager, or prepared to do something"},{word:"witness",meaning:"a person who sees an event take place"}],
+  difficult:[{word:"aberration",meaning:"a departure from what is normal or expected"},{word:"acrimonious",meaning:"angry and bitter in manner or tone"},{word:"acumen",meaning:"the ability to make good judgements and quick decisions"},{word:"adamant",meaning:"refusing to be persuaded or to change one's mind"},{word:"admonish",meaning:"to warn or reprimand someone firmly"},{word:"aesthetic",meaning:"concerned with beauty or the appreciation of beauty"},{word:"aggrandize",meaning:"to increase the power, status, or wealth of someone"},{word:"alacrity",meaning:"brisk and cheerful readiness to do something"},{word:"alienation",meaning:"the state of being isolated from a group or activity"},{word:"alliteration",meaning:"the occurrence of the same letter at the start of words"},{word:"ambiguity",meaning:"the quality of being open to more than one interpretation"},{word:"ambivalent",meaning:"having mixed feelings about someone or something"},{word:"ameliorate",meaning:"to make something bad or unsatisfactory better"},{word:"anachronism",meaning:"a thing belonging to a period other than that in which it exists"},{word:"antagonism",meaning:"active hostility or opposition towards someone"},{word:"antiquated",meaning:"old-fashioned or outdated; no longer relevant"},{word:"apocryphal",meaning:"of doubtful authenticity; probably not true"},{word:"apprehension",meaning:"anxiety or fear that something bad will happen"},{word:"arbitrary",meaning:"based on random choice rather than any reason"},{word:"articulate",meaning:"having the ability to speak fluently and coherently"},{word:"aspiration",meaning:"a hope or ambition of achieving something"},{word:"assiduous",meaning:"showing great care and perseverance in one's work"},{word:"audacious",meaning:"showing willingness to take surprisingly bold risks"},{word:"auspicious",meaning:"conducive to success; giving promise of good things"},{word:"authoritarian",meaning:"favouring strict obedience to authority"},{word:"autonomous",meaning:"acting independently and having the freedom to do so"},{word:"belligerent",meaning:"hostile and aggressive; engaged in a conflict"},{word:"benevolent",meaning:"well meaning and kindly towards other people"},{word:"bureaucratic",meaning:"relating to excessive official routine or procedure"},{word:"camaraderie",meaning:"mutual trust and friendship among people together"},{word:"candor",meaning:"the quality of being open and honest in expression"},{word:"catastrophe",meaning:"an event causing great and sudden damage or suffering"},{word:"caustic",meaning:"able to burn or corrode; sharply sarcastic"},{word:"circumspect",meaning:"wary and unwilling to take risks; cautious"},{word:"clandestine",meaning:"kept secret or done secretively and furtively"},{word:"cognizant",meaning:"having knowledge or being aware of something"},{word:"commemorate",meaning:"to recall and show respect for someone in a ceremony"},{word:"compulsory",meaning:"required by law or a rule; obligatory"},{word:"contemptuous",meaning:"showing contempt; scornful of someone or something"},{word:"contentious",meaning:"causing or likely to cause argument; controversial"},{word:"controversial",meaning:"giving rise to public disagreement or argument"},{word:"credulous",meaning:"having too great a readiness to believe things"},{word:"culmination",meaning:"the highest or climactic point of something"},{word:"cumbersome",meaning:"large or heavy and therefore difficult to handle"},{word:"debilitating",meaning:"making someone very weak and unable to function"},{word:"deceptive",meaning:"giving an appearance different from the true one"},{word:"deference",meaning:"humble submission and respect towards someone"},{word:"deleterious",meaning:"causing harm or damage to something or someone"},{word:"demagogue",meaning:"a political leader who seeks support by appealing to emotions"},{word:"deprivation",meaning:"the damaging lack of material benefits considered basic"},{word:"despondent",meaning:"in low spirits from loss of hope or courage"},{word:"dichotomy",meaning:"a division or contrast between two opposed things"},{word:"diligent",meaning:"having or showing care and conscientiousness in work"},{word:"discernible",meaning:"able to be discerned; perceptible to the senses"},{word:"discrepancy",meaning:"a lack of compatibility between facts or claims"},{word:"disdainful",meaning:"showing contempt or lack of respect for something"},{word:"disillusion",meaning:"to cause to realise that a belief is false"},{word:"disparate",meaning:"essentially different in kind; not able to be compared"},{word:"dissolution",meaning:"the closing down or ending of an assembly"},{word:"divergent",meaning:"tending to be different or develop in different directions"},{word:"eccentric",meaning:"unconventional and slightly strange in behaviour"},{word:"efficacious",meaning:"successful in producing a desired or intended result"},{word:"eloquence",meaning:"fluent or persuasive speaking or writing"},{word:"empirical",meaning:"based on observation or experience rather than theory"},{word:"enigmatic",meaning:"difficult to interpret or understand; mysterious"},{word:"ephemeral",meaning:"lasting for a very short time only"},{word:"equivocal",meaning:"open to more than one interpretation; uncertain"},{word:"exacerbate",meaning:"to make a problem or bad situation worse"},{word:"exasperate",meaning:"to irritate and frustrate someone intensely"},{word:"exorbitant",meaning:"unreasonably high; exceeding what is fair in price"},{word:"expeditious",meaning:"done with speed and efficiency"},{word:"facetious",meaning:"treating serious issues with inappropriate humour"},{word:"fallacious",meaning:"based on a mistaken belief; logically unsound"},{word:"fastidious",meaning:"very attentive to accuracy and detail; hard to please"},{word:"flamboyant",meaning:"tending to attract attention because of exuberance"},{word:"formidable",meaning:"inspiring fear or respect through impressive qualities"},{word:"fundamental",meaning:"forming a necessary base; of central importance"},{word:"gregarious",meaning:"fond of company; sociable and outgoing"},{word:"hierarchy",meaning:"a system in which people are ranked above one another"},{word:"hypocritical",meaning:"behaving in ways that contradict stated beliefs"},{word:"iconoclast",meaning:"a person who attacks cherished beliefs or institutions"},{word:"impeccable",meaning:"in accordance with the highest standards; faultless"},{word:"impervious",meaning:"not allowing fluid to pass; unable to be affected"},{word:"incongruent",meaning:"not in harmony or keeping with the surroundings"},{word:"incorrigible",meaning:"not able to be corrected or reformed"},{word:"indignant",meaning:"feeling or showing anger at unjust treatment"},{word:"inevitable",meaning:"certain to happen; unavoidable"},{word:"inexorable",meaning:"impossible to stop or prevent; relentless"},{word:"inflammatory",meaning:"tending to arouse anger or other strong reactions"},{word:"ingenuity",meaning:"the quality of being clever, original, and inventive"},{word:"innocuous",meaning:"not harmful or offensive in any way"},{word:"insidious",meaning:"proceeding in a gradual but harmful and deceptive way"},{word:"intransigent",meaning:"unwilling to change views or agree to compromise"},{word:"irrefutable",meaning:"impossible to deny or disprove; undeniable"},{word:"juxtaposition",meaning:"placing two things close together to highlight contrast"},{word:"laconic",meaning:"using very few words; brief and concise"},{word:"languorous",meaning:"having a pleasantly relaxed and peaceful quality"},{word:"meticulous",meaning:"showing great attention to detail or correctness"},{word:"monotonous",meaning:"dull, tedious, and repetitious; lacking in variety"},{word:"nefarious",meaning:"wicked or criminal in nature"},{word:"negligence",meaning:"failure to take proper care of something"},{word:"obstinate",meaning:"stubbornly refusing to change one's opinion"},{word:"ominous",meaning:"giving the impression that something bad is about to happen"},{word:"ostentatious",meaning:"characterised by a vulgar display of wealth"},{word:"paradoxical",meaning:"seeming absurd or self-contradictory"},{word:"pejorative",meaning:"expressing contempt or disapproval of something"},{word:"perfunctory",meaning:"carried out with minimal effort; superficial"},{word:"pervasive",meaning:"spreading widely throughout an area or group"},{word:"pessimistic",meaning:"tending to see the worst aspect of things"},{word:"pragmatic",meaning:"dealing with things sensibly and realistically"},{word:"precarious",meaning:"not securely held; dependent on chance"},{word:"pretentious",meaning:"attempting to impress by affecting greater importance"},{word:"prodigious",meaning:"remarkably or impressively great in extent"},{word:"proficiency",meaning:"a high degree of competence or skill"},{word:"provocative",meaning:"causing anger or another strong reaction deliberately"},{word:"reciprocal",meaning:"given or felt by each towards the other; mutual"},{word:"relinquish",meaning:"to voluntarily cease to keep or claim something"},{word:"reminiscent",meaning:"tending to remind one of something past"},{word:"repercussion",meaning:"an unintended consequence of an event or action"},{word:"resilience",meaning:"the capacity to recover quickly from difficulties"},{word:"reverence",meaning:"deep respect for someone or something"},{word:"sagacious",meaning:"having or showing keen mental discernment and judgement"},{word:"skepticism",meaning:"a doubting or questioning attitude towards something"},{word:"sophisticated",meaning:"having a refined knowledge of the world"},{word:"spontaneous",meaning:"performed or occurring without planning or premeditation"},{word:"superficial",meaning:"existing only at the surface; not thorough"},{word:"surveillance",meaning:"close observation especially of a suspected person"},{word:"systematic",meaning:"done or acting according to a fixed plan or system"},{word:"temperamental",meaning:"liable to unreasonable changes of mood"},{word:"tenacious",meaning:"tending to keep a firm hold of something; persistent"},{word:"treacherous",meaning:"guilty of betrayal; dangerous due to hidden hazards"},{word:"turbulent",meaning:"characterised by conflict, disorder, or confusion"},{word:"unambiguous",meaning:"not open to more than one interpretation; clear"},{word:"unprecedented",meaning:"never done or known before; novel"},{word:"vacillate",meaning:"to waver between different opinions or actions"},{word:"vehement",meaning:"showing strong feeling; forceful or passionate"},{word:"versatile",meaning:"able to adapt to many different functions or activities"},{word:"vindictive",meaning:"having a strong desire to harm someone who hurt you"},{word:"vulnerability",meaning:"the quality of being exposed to the possibility of attack"},{word:"whimsical",meaning:"playfully quaint or fanciful in character"}]
 };
 
-// ── BOOT ─────────────────────────────────────────
 window.onload=async()=>{
   loadStats();renderLib();renderAnalysis();
-  // push initial state so back button works
   history.replaceState({screen:'home'},'','');
   try{
     const r=await fetch(WORDS_URL);
     if(r.ok){
       const data=await r.json();
-      // Support both old format (array of strings) and new format (array of {word,meaning})
-      const normalise=arr=>arr.map(item=>typeof item==='string'?{word:item,meaning:''}:item);
-      wordBank={
-        easy:normalise(data.easy||[]),
-        hard:normalise(data.hard||[]),
-        difficult:normalise(data.difficult||[])
-      };
+      const norm=arr=>arr.map(i=>typeof i==='string'?{word:i,meaning:''}:i);
+      wordBank={easy:norm(data.easy||[]),hard:norm(data.hard||[]),difficult:norm(data.difficult||[])};
     }
   }catch(e){}
   if(!wordBank.easy.length)wordBank=FALLBACK;
 };
 
-// ── PHONE BACK BUTTON ─────────────────────────────
 window.addEventListener('popstate',e=>{
-  if(e.state&&e.state.screen){
-    showScreen(e.state.screen);
-  }
+  if(e.state&&e.state.screen)showScreen(e.state.screen);
 });
 
-// ── NAV ──────────────────────────────────────────
-function nav(id){
-  history.pushState({screen:id},'','');
-  showScreen(id);
-}
-
+function nav(id){history.pushState({screen:id},'','');showScreen(id);}
 function showScreen(id){
-  // stop speech if navigating away from listen game
   if(id!=='listen-game'&&'speechSynthesis' in window)window.speechSynthesis.cancel();
-  // stop respell timer if navigating away
   if(id!=='respell-game')clearInterval(rTimer);
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   const t=document.getElementById(id);
@@ -985,35 +348,38 @@ function showScreen(id){
   if(id==='analysis')renderAnalysis();
   if(id==='essay-game')initEssay();
 }
-
 function toggleDD(){document.getElementById('dd').classList.toggle('open');}
 function closeDD(){document.getElementById('dd').classList.remove('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.nav-right'))closeDD();});
 
-// ── DIFFICULTY ────────────────────────────────────
+// Re-Spell: always 5 words
 function openDiff(game){pendingGame=game;document.getElementById('diff-ov').classList.add('open');}
 function startGame(diff){
   document.getElementById('diff-ov').classList.remove('open');
-  currentDiff=diff;currentGame=pendingGame;
-  const count=(currentGame==='respell'&&diff==='easy')?5:10;
+  currentDiff=diff;currentGame='respell';
   const pool=wordBank[diff]||[];
-  currentWords=shuffle([...pool]).slice(0,count);
-  if(!currentWords.length){showNotif('Word bank empty — check connection');return;}
-  if(currentGame==='respell')initRespell();else initListen();
+  currentWords=shuffle([...pool]).slice(0,5);
+  if(!currentWords.length){showNotif('Word bank empty');return;}
+  initRespell();
 }
 
-// ── RESPELL ───────────────────────────────────────
+// Listen & Spell: always 10 words
+function openListenDiff(){document.getElementById('listen-diff-ov').classList.add('open');}
+function startListenGame(diff){
+  document.getElementById('listen-diff-ov').classList.remove('open');
+  currentDiff=diff;currentGame='listen';
+  const pool=wordBank[diff]||[];
+  currentWords=shuffle([...pool]).slice(0,10);
+  if(!currentWords.length){showNotif('Word bank empty');return;}
+  initListen();
+}
+
 function initRespell(){
   nav('respell-game');
   let cd=20;
   const area=document.getElementById('respell-area');
-  // currentWords are {word, meaning} objects
   const wordList=currentWords.map(w=>w.word||w);
-  area.innerHTML=`
-    <div><div class="prog"><div class="prog-fill" id="rp-bar" style="width:100%"></div></div>
-    <div class="prog-label">memorise these words</div></div>
-    <div class="words-grid" id="rp-grid"></div>
-    <div class="timer-block"><div class="timer-n" id="rp-t">20</div><div class="timer-l">seconds</div></div>`;
+  area.innerHTML=`<div><div class="prog"><div class="prog-fill" id="rp-bar" style="width:100%"></div></div><div class="prog-label">memorise these 5 words</div></div><div class="words-grid" id="rp-grid"></div><div class="timer-block"><div class="timer-n" id="rp-t">20</div><div class="timer-l">seconds</div></div>`;
   const g=document.getElementById('rp-grid');
   wordList.forEach(w=>{const c=document.createElement('div');c.className='wchip';c.textContent=w;g.appendChild(c);});
   clearInterval(rTimer);
@@ -1027,9 +393,8 @@ function initRespell(){
 
 function renderRespellType(){
   const wordList=currentWords.map(w=>w.word||w);
-  const area=document.getElementById('respell-area');
-  area.innerHTML=`
-    <div class="prog-label" style="text-align:left">now spell all ${wordList.length} words from memory</div>
+  document.getElementById('respell-area').innerHTML=`
+    <div class="prog-label" style="text-align:left">spell all 5 words from memory</div>
     <div class="respell-inputs" id="rp-ins"></div>
     <button class="btn-p" onclick="checkRespell()">Check answers</button>`;
   const ins=document.getElementById('rp-ins');
@@ -1064,17 +429,12 @@ function renderRespellRes(ok,err,blank,ww){
       <div class="sc sk"><div class="sc-n">${blank}</div><div class="sc-l">Blank</div></div>
     </div>
     ${ww.length?`<div class="wrong-list"><div class="wl-head">Review</div>${ww.map(w=>`<div class="wl-row"><span class="wl-y">${w.y||'—'}</span><span class="wl-s"> → </span><span class="wl-c">${w.c}</span></div>`).join('')}</div>`:`<div style="text-align:center;font-size:13px;color:var(--success);padding:1rem">All correct.</div>`}
-    <div class="res-btns">
-      <button class="btn-p" onclick="openDiff('respell')">Play again</button>
-      <button class="btn-s" onclick="nav('choose-game')">Back</button>
-    </div>`;
+    <div class="res-btns"><button class="btn-p" onclick="openDiff('respell')">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
 }
 
-// ── LISTEN & SPELL ────────────────────────────────
 function initListen(){
   nav('listen-game');
-  listenIdx=0;
-  listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
+  listenIdx=0;listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
   renderListenWord();
 }
 
@@ -1104,12 +464,7 @@ function renderListenWord(){
 }
 
 function speak(w){
-  if('speechSynthesis' in window){
-    window.speechSynthesis.cancel();
-    const u=new SpeechSynthesisUtterance(w);
-    u.rate=0.85;u.lang='en-US';
-    window.speechSynthesis.speak(u);
-  }
+  if('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.rate=0.85;u.lang='en-US';window.speechSynthesis.speak(u);}
 }
 
 function submitListen(){
@@ -1125,16 +480,13 @@ function submitListen(){
 function skipListen(){listenRes.skipped++;nextListen();}
 function nextListen(){
   listenIdx++;
-  if(listenIdx>=currentWords.length){
-    saveSession('Listen & Spell',listenRes.correct,listenRes.wrong,listenRes.skipped);
-    renderListenRes();
-  }else renderListenWord();
+  if(listenIdx>=currentWords.length){saveSession('Listen & Spell',listenRes.correct,listenRes.wrong,listenRes.skipped);renderListenRes();}
+  else renderListenWord();
 }
 
 function renderListenRes(){
   const {correct,wrong,skipped,wrongWords}=listenRes;
-  const total=currentWords.length;
-  const acc=total>0?Math.round(correct/total*100):0;
+  const acc=currentWords.length>0?Math.round(correct/currentWords.length*100):0;
   const col=v=>v>=70?'var(--success)':v>=40?'var(--warn)':'var(--danger)';
   document.getElementById('listen-area').innerHTML=`
     <div class="sh-title">Test complete</div>
@@ -1143,18 +495,11 @@ function renderListenRes(){
       <div class="sc err"><div class="sc-n">${wrong}</div><div class="sc-l">Wrong</div></div>
       <div class="sc sk"><div class="sc-n">${skipped}</div><div class="sc-l">Skipped</div></div>
     </div>
-    <div class="acc-block">
-      <div class="acc-n" style="color:${col(acc)}">${acc}%</div>
-      <div class="acc-l">Accuracy</div>
-    </div>
+    <div class="acc-block"><div class="acc-n" style="color:${col(acc)}">${acc}%</div><div class="acc-l">Accuracy</div></div>
     ${wrongWords.length?`<div class="wrong-list"><div class="wl-head">Review</div>${wrongWords.map(w=>`<div class="wl-row"><span class="wl-y">${w.y}</span><span class="wl-s"> → </span><span class="wl-c">${w.c}</span></div>`).join('')}</div>`:''}
-    <div class="res-btns">
-      <button class="btn-p" onclick="openDiff('listen')">Play again</button>
-      <button class="btn-s" onclick="nav('choose-game')">Back</button>
-    </div>`;
+    <div class="res-btns"><button class="btn-p" onclick="openListenDiff()">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
 }
 
-// ── ESSAY ─────────────────────────────────────────
 let essayTopic='';
 function initEssay(){
   const topics=shuffle([...TOPICS]).slice(0,3);
@@ -1192,8 +537,7 @@ function analyseEssay(){
     if(words[i].toLowerCase().replace(/[.,!?]/g,'')=== words[i-1].toLowerCase().replace(/[.,!?]/g,''))
       errors.push(`Repeated word: "${words[i].replace(/[.,!?]/g,'')}"`)
   const sents=text.split(/[.!?]+/).filter(s=>s.trim());
-  if(sents.filter(s=>s.trim().split(/\s+/).length<4).length>2)
-    errors.push('Several very short sentences — try expanding ideas');
+  if(sents.filter(s=>s.trim().split(/\s+/).length<4).length>2)errors.push('Several very short sentences — try expanding ideas');
   const sp=Math.max(40,Math.min(100,100-errors.length*10));
   const st=Math.min(100,50+(wc>=150?20:Math.floor(wc/150*20))+(sents.length>=5?20:0));
   const ov=Math.round((sp+st)/2);
@@ -1211,14 +555,10 @@ function analyseEssay(){
       ${!errors.length?'<div class="sug" style="color:var(--success)"><span>✓</span>No obvious errors.</div>':''}
     </div>
     <div style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:var(--muted)">${wc} words · ${sents.length} sentences</div>
-    <div class="res-btns">
-      <button class="btn-p" onclick="initEssay()">Try another</button>
-      <button class="btn-s" onclick="nav('choose-game')">Back</button>
-    </div>`;
+    <div class="res-btns"><button class="btn-p" onclick="initEssay()">Try another</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
   saveSession('Essay',Math.round(sp/10),errors.length,0);
 }
 
-// ── LIBRARY ───────────────────────────────────────
 function getA(){try{return JSON.parse(localStorage.getItem('si-a')||'[]')}catch{return[]}}
 function setA(a){localStorage.setItem('si-a',JSON.stringify(a));}
 function getLists(){const a=getA();return['All',...new Set(a.map(x=>x.list||'General'))];}
@@ -1233,10 +573,7 @@ function renderLib(){
 }
 function switchList(l){activeList=l;renderLib();}
 function openModal(){document.getElementById('add-modal').classList.add('open');}
-function closeModal(){
-  document.getElementById('add-modal').classList.remove('open');
-  ['m-url','m-title','m-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-}
+function closeModal(){document.getElementById('add-modal').classList.remove('open');['m-url','m-title','m-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function saveArticle(){
   const url=document.getElementById('m-url').value.trim();
   if(!url){showNotif('Enter a URL');return;}
@@ -1248,23 +585,14 @@ function saveArticle(){
 }
 function delArt(id){setA(getA().filter(a=>a.id!==id));renderLib();}
 function openArt(url,title){
-  document.getElementById('read-content').innerHTML=`
-    <div style="margin-bottom:1.5rem">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Article</div>
-      <div style="font-size:1.1rem;font-weight:500;line-height:1.4">${title}</div>
-    </div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Opens in a new tab.</p>
-    <button class="btn-p" style="max-width:240px" onclick="window.open('${url}','_blank')">Open article →</button>`;
+  document.getElementById('read-content').innerHTML=`<div style="margin-bottom:1.5rem"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Article</div><div style="font-size:1.1rem;font-weight:500;line-height:1.4">${title}</div></div><p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Opens in a new tab.</p><button class="btn-p" style="max-width:240px" onclick="window.open('${url}','_blank')">Open article →</button>`;
   nav('read-article');
 }
 
-// ── ANALYSIS ──────────────────────────────────────
 function getS(){try{return JSON.parse(localStorage.getItem('si-s')||'[]')}catch{return[]}}
 function saveSession(game,correct,wrong,skipped){
   const s=getS();
-  s.unshift({game,correct,wrong,skipped,
-    date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'}),
-    time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});
+  s.unshift({game,correct,wrong,skipped,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'}),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});
   localStorage.setItem('si-s',JSON.stringify(s.slice(0,50)));
   loadStats();
 }
@@ -1285,31 +613,11 @@ function renderAnalysis(){
   const tc=s.reduce((a,x)=>a+(x.correct||0),0);
   const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
   const acc=(tc+tw)>0?Math.round(tc/(tc+tw)*100):0;
-  c.innerHTML=`
-    <div class="score-grid" style="margin-bottom:1.25rem">
-      <div class="sc ok"><div class="sc-n">${tc}</div><div class="sc-l">Correct</div></div>
-      <div class="sc err"><div class="sc-n">${tw}</div><div class="sc-l">Wrong</div></div>
-      <div class="sc"><div class="sc-n">${acc}%</div><div class="sc-l">Accuracy</div></div>
-    </div>
-    <div class="hist-list">${s.slice(0,20).map(x=>`
-      <div class="hist-row">
-        <div class="hist-top"><span class="hist-game">${x.game}</span><span class="hist-date">${x.date} ${x.time}</span></div>
-        <div class="hist-scores">
-          <span class="hs ok"><span class="hn">${x.correct}</span> correct</span>
-          <span class="hs err"><span class="hn">${x.wrong}</span> wrong</span>
-          ${x.skipped?`<span class="hs"><span class="hn">${x.skipped}</span> skipped</span>`:''}
-        </div>
-      </div>`).join('')}
-    </div>`;
+  c.innerHTML=`<div class="score-grid" style="margin-bottom:1.25rem"><div class="sc ok"><div class="sc-n">${tc}</div><div class="sc-l">Correct</div></div><div class="sc err"><div class="sc-n">${tw}</div><div class="sc-l">Wrong</div></div><div class="sc"><div class="sc-n">${acc}%</div><div class="sc-l">Accuracy</div></div></div><div class="hist-list">${s.slice(0,20).map(x=>`<div class="hist-row"><div class="hist-top"><span class="hist-game">${x.game}</span><span class="hist-date">${x.date} ${x.time}</span></div><div class="hist-scores"><span class="hs ok"><span class="hn">${x.correct}</span> correct</span><span class="hs err"><span class="hn">${x.wrong}</span> wrong</span>${x.skipped?`<span class="hs"><span class="hn">${x.skipped}</span> skipped</span>`:''}</div></div>`).join('')}</div>`;
 }
 
-// ── UTILS ─────────────────────────────────────────
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-function showNotif(msg){
-  const n=document.getElementById('notif');
-  n.textContent=msg;n.className='notif show';
-  setTimeout(()=>{n.className='notif';},2500);
-}
+function showNotif(msg){const n=document.getElementById('notif');n.textContent=msg;n.className='notif show';setTimeout(()=>{n.className='notif';},2500);}
 </script>
 </body>
 </html>
