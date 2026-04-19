@@ -45,15 +45,20 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 .gr-name{font-weight:500;font-size:14px;}
 .gr-desc{font-size:12px;color:var(--muted);margin-top:2px;}
 .gr-arrow{color:var(--faint);font-size:12px;}
+
+/* OVERLAY — used for difficulty popup */
 .overlay{position:fixed;inset:0;background:rgba(245,244,240,.88);backdrop-filter:blur(2px);z-index:300;display:none;align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
 .popup{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--text);padding:1.5rem 1.25rem;width:100%;max-width:480px;border-radius:var(--r) var(--r) 0 0;}
+.popup-back{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--muted);font-size:13px;font-family:'IBM Plex Sans',sans-serif;cursor:pointer;padding:0;margin-bottom:1rem;transition:color .15s;}
+.popup-back:hover{color:var(--text);}
 .popup-title{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:500;margin-bottom:4px;}
 .popup-sub{font-size:12px;color:var(--muted);margin-bottom:1.25rem;}
 .diff-list{display:flex;flex-direction:column;gap:6px;}
 .diff-row{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;background:var(--bg);transition:all .15s;}
 .diff-row:hover{border-color:var(--text);}
 .diff-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+
 .game-wrap{flex:1;padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:1.25rem;max-width:480px;width:100%;margin:0 auto;}
 .prog{height:2px;background:var(--border);border-radius:1px;}
 .prog-fill{height:100%;background:var(--text);border-radius:1px;transition:width .4s;}
@@ -95,14 +100,14 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 .review-word{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
 .review-word-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;}
 .review-word-header:hover{background:var(--bg);}
-.rw-left{display:flex;align-items:center;gap:10px;}
+.rw-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .rw-word{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;}
 .rw-status{font-size:11px;padding:2px 8px;border-radius:100px;}
 .rw-status.ok{background:#f0faf4;color:var(--success);}
 .rw-status.err{background:#fdf0f0;color:var(--danger);}
 .rw-status.blank{background:#fdf8f0;color:var(--warn);}
 .rw-you{font-size:12px;color:var(--danger);font-family:'IBM Plex Mono',monospace;}
-.rw-chevron{font-size:12px;color:var(--faint);transition:transform .2s;}
+.rw-chevron{font-size:11px;color:var(--faint);transition:transform .2s;flex-shrink:0;}
 .rw-chevron.open{transform:rotate(90deg);}
 .review-word-body{padding:0 14px 14px;display:none;}
 .review-word-body.open{display:block;}
@@ -170,10 +175,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 <body>
 <div class="notif" id="notif"></div>
 
+<!-- SHARED DIFFICULTY POPUP — one popup, reused for all games -->
 <div class="overlay" id="diff-ov">
   <div class="popup">
+    <button class="popup-back" onclick="closeDiff()">← back</button>
     <div class="popup-title">Select difficulty</div>
-    <div class="popup-sub">5 words · all levels</div>
+    <div class="popup-sub" id="diff-sub">5 words per game</div>
     <div class="diff-list">
       <div class="diff-row" onclick="startGame('easy')">Easy <span class="diff-tag">common but precise words</span></div>
       <div class="diff-row" onclick="startGame('hard')">Hard <span class="diff-tag">editorial & journalism level</span></div>
@@ -182,18 +189,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
   </div>
 </div>
 
-<div class="overlay" id="listen-diff-ov">
-  <div class="popup">
-    <div class="popup-title">Select difficulty</div>
-    <div class="popup-sub">10 words · hear each word and spell it</div>
-    <div class="diff-list">
-      <div class="diff-row" onclick="startListenGame('easy')">Easy <span class="diff-tag">common but precise words</span></div>
-      <div class="diff-row" onclick="startListenGame('hard')">Hard <span class="diff-tag">editorial & journalism level</span></div>
-      <div class="diff-row" onclick="startListenGame('difficult')">Difficult <span class="diff-tag">CAT / advanced English</span></div>
-    </div>
-  </div>
-</div>
-
+<!-- ADD ARTICLE MODAL -->
 <div class="modal-ov" id="add-modal">
   <div class="modal">
     <div class="modal-title">Add article</div>
@@ -221,7 +217,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
     </div>
   </nav>
   <div class="wrap wrap-c" style="gap:0">
-    <div class="home-label">Spell It</div>
+    <div class="home-label">CAT VARC prep</div>
     <div class="home-title">Master<br>every<br>word.</div>
     <div class="home-btns">
       <button class="btn-p" onclick="nav('choose-game')">Start test</button>
@@ -245,7 +241,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
         <div class="gr-left"><div class="gr-icon">◉</div><div><div class="gr-name">Re-Spell</div><div class="gr-desc">See 5 words for 20 sec, spell from memory</div></div></div>
         <div class="gr-arrow">→</div>
       </div>
-      <div class="game-row" onclick="openListenDiff()">
+      <div class="game-row" onclick="openDiff('listen')">
         <div class="gr-left"><div class="gr-icon">◎</div><div><div class="gr-name">Listen & Spell</div><div class="gr-desc">Hear the word, read its meaning, type spelling</div></div></div>
         <div class="gr-arrow">→</div>
       </div>
@@ -259,13 +255,13 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 
 <!-- RESPELL -->
 <div class="screen" id="respell-game">
-  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('choose-game')">✕ quit</button></nav>
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="quitGame()">✕ quit</button></nav>
   <div class="game-wrap" id="respell-area"></div>
 </div>
 
 <!-- LISTEN -->
 <div class="screen" id="listen-game">
-  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('choose-game')">✕ quit</button></nav>
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="quitGame()">✕ quit</button></nav>
   <div class="game-wrap" id="listen-area"></div>
 </div>
 
@@ -314,47 +310,38 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 
 <script>
 // ── WORD BANK ─────────────────────────────────────
-// 2000 curated words: journalism, CAT VARC, advanced professional English
-// Each: {word, meaning}
-const WORDS = {
+const WORDS={
 easy:[
 {word:"abdicate",meaning:"to give up a position of power or responsibility"},
 {word:"aberrant",meaning:"departing from an accepted standard; unusual"},
 {word:"abeyance",meaning:"a state of temporary suspension or inactivity"},
 {word:"abject",meaning:"of the most miserable or degrading kind"},
 {word:"abjure",meaning:"to formally renounce or reject a belief or claim"},
-{word:"ablution",meaning:"the act of washing oneself as a religious rite"},
 {word:"abrasive",meaning:"showing little concern for the feelings of others; harsh"},
 {word:"abridge",meaning:"to shorten a piece of writing without losing meaning"},
 {word:"abscond",meaning:"to leave hurriedly and secretly to escape consequences"},
 {word:"abstemious",meaning:"not self-indulgent, especially with food and drink"},
-{word:"abstruse",meaning:"difficult to understand; obscure"},
 {word:"accolade",meaning:"an award or privilege given as a special honour"},
 {word:"acerbic",meaning:"sharp and forthright in expression; bitter in tone"},
 {word:"acrimony",meaning:"bitterness or ill feeling in speech or manner"},
-{word:"acuity",meaning:"sharpness or keenness of thought or vision"},
+{word:"acuity",meaning:"sharpness or keenness of thought, vision, or hearing"},
 {word:"adroit",meaning:"clever or skilful in using the hands or mind"},
 {word:"adulation",meaning:"excessive admiration or flattery"},
 {word:"adulterate",meaning:"to make impure by adding inferior or harmful substances"},
 {word:"adversity",meaning:"difficult or unpleasant circumstances; misfortune"},
 {word:"affable",meaning:"friendly, good-natured, and easy to talk to"},
-{word:"affidavit",meaning:"a written statement confirmed by oath for legal use"},
 {word:"affluent",meaning:"having a great deal of money or wealth; prosperous"},
 {word:"affront",meaning:"an action or remark that causes outrage or offence"},
-{word:"aggravate",meaning:"to make a problem or offence worse; to annoy"},
 {word:"agile",meaning:"able to move quickly and easily; mentally sharp"},
-{word:"agnostic",meaning:"a person who believes the existence of God is unknown"},
 {word:"agrarian",meaning:"relating to cultivated land or the interests of farmers"},
 {word:"allay",meaning:"to diminish or put at rest fear, suspicion, or worry"},
 {word:"allege",meaning:"to claim or assert that something is the case"},
-{word:"alleviate",meaning:"to make suffering, deficiency, or problem less severe"},
+{word:"alleviate",meaning:"to make suffering or a problem less severe"},
 {word:"allure",meaning:"the quality of being powerfully and mysteriously attractive"},
 {word:"altruism",meaning:"unselfish concern for the welfare of others"},
 {word:"ambiguous",meaning:"open to more than one interpretation; unclear"},
-{word:"ameliorate",meaning:"to make something bad or unsatisfactory better"},
 {word:"amiable",meaning:"having a friendly and pleasant manner; agreeable"},
-{word:"amicable",meaning:"having a spirit of friendliness; without serious disagreement"},
-{word:"anachronism",meaning:"something belonging to a period other than the one it exists in"},
+{word:"amicable",meaning:"having a spirit of friendliness without serious disagreement"},
 {word:"analogy",meaning:"a comparison between two things to explain or clarify"},
 {word:"anarchy",meaning:"a state of disorder due to absence of authority"},
 {word:"anecdote",meaning:"a short amusing or interesting story about a real incident"},
@@ -363,12 +350,10 @@ easy:[
 {word:"antagonist",meaning:"a person who actively opposes or is hostile to another"},
 {word:"antipathy",meaning:"a deep-seated feeling of dislike; aversion"},
 {word:"apathy",meaning:"lack of interest, enthusiasm, or concern"},
-{word:"appease",meaning:"to pacify or placate someone by conceding to demands"},
+{word:"appease",meaning:"to pacify someone by conceding to their demands"},
 {word:"ardent",meaning:"very enthusiastic or passionate about something"},
 {word:"arduous",meaning:"involving or requiring strenuous effort; difficult"},
-{word:"articulate",meaning:"having or showing the ability to speak fluently"},
 {word:"ascetic",meaning:"characterised by severe self-discipline and abstention"},
-{word:"asperse",meaning:"to attack or criticise the reputation or integrity of someone"},
 {word:"astute",meaning:"having an ability to accurately assess situations; shrewd"},
 {word:"atone",meaning:"to make amends or reparation for wrongdoing"},
 {word:"attrition",meaning:"the process of gradually reducing the strength of something"},
@@ -385,7 +370,6 @@ easy:[
 {word:"benign",meaning:"gentle and kindly; not harmful in effect"},
 {word:"berate",meaning:"to scold or criticise someone angrily"},
 {word:"blatant",meaning:"done openly and unashamedly; completely obvious"},
-{word:"blunder",meaning:"a stupid or careless mistake"},
 {word:"bolster",meaning:"to support or strengthen something"},
 {word:"boorish",meaning:"rough and bad-mannered; coarse"},
 {word:"brevity",meaning:"concise and exact use of words; shortness of time"},
@@ -401,11 +385,9 @@ easy:[
 {word:"caustic",meaning:"sarcastic in a scathing and bitter way"},
 {word:"censure",meaning:"to express severe disapproval of someone officially"},
 {word:"charlatan",meaning:"a person falsely claiming to have special knowledge"},
-{word:"chicanery",meaning:"the use of trickery to achieve a political, financial goal"},
-{word:"chronic",meaning:"persisting for a long time or constantly recurring"},
+{word:"chicanery",meaning:"the use of trickery to achieve a political or financial goal"},
 {word:"circuitous",meaning:"longer than the most direct way; roundabout"},
 {word:"clamour",meaning:"a loud and confused noise; a strongly expressed demand"},
-{word:"clandestine",meaning:"kept secret or done secretively"},
 {word:"coerce",meaning:"to persuade an unwilling person to do something by force"},
 {word:"cogent",meaning:"clear, logical, and convincing in argument"},
 {word:"cognisant",meaning:"having knowledge or awareness of a situation"},
@@ -416,7 +398,7 @@ easy:[
 {word:"condone",meaning:"to accept and allow behaviour considered morally wrong"},
 {word:"convoluted",meaning:"extremely complex and difficult to follow"},
 {word:"copious",meaning:"abundant in supply or quantity"},
-{word:"cordial",meaning:"warm and friendly; a sweet fruit-flavoured drink"},
+{word:"cordial",meaning:"warm and friendly"},
 {word:"covert",meaning:"not openly acknowledged or displayed; secret"},
 {word:"covet",meaning:"to yearn to possess something belonging to another"},
 {word:"craven",meaning:"contemptibly lacking in courage; cowardly"},
@@ -426,7 +408,6 @@ easy:[
 {word:"cursory",meaning:"hasty and therefore not thorough or detailed"},
 {word:"cynical",meaning:"believing that people are motivated purely by self-interest"},
 {word:"daunt",meaning:"to make someone feel intimidated or apprehensive"},
-{word:"dawdle",meaning:"to waste time; to move slowly"},
 {word:"dearth",meaning:"a scarcity or lack of something"},
 {word:"debacle",meaning:"a sudden disastrous collapse or defeat; a fiasco"},
 {word:"decimate",meaning:"to kill or destroy a large proportion of"},
@@ -446,7 +427,6 @@ easy:[
 {word:"digress",meaning:"to leave the main subject temporarily in speech"},
 {word:"dilapidated",meaning:"in a state of disrepair or ruin through neglect"},
 {word:"dilettante",meaning:"a person who cultivates an area of interest superficially"},
-{word:"diminish",meaning:"to make or become less; to reduce in importance"},
 {word:"discern",meaning:"to recognise or find out something by using the senses"},
 {word:"discord",meaning:"disagreement between people; lack of harmony"},
 {word:"discreet",meaning:"careful and prudent in behaviour; not drawing attention"},
@@ -460,7 +440,7 @@ easy:[
 {word:"egregious",meaning:"outstandingly bad; shocking"},
 {word:"eloquent",meaning:"fluent or persuasive in speaking or writing"},
 {word:"elusive",meaning:"difficult to find, catch, or achieve"},
-{word:"embroil",meaning:"to involve deeply in an argument, conflict, or difficult situation"},
+{word:"embroil",meaning:"to involve someone deeply in an argument or difficult situation"},
 {word:"emulate",meaning:"to match or surpass by imitation; to copy admiringly"},
 {word:"endemic",meaning:"regularly found among particular people or in a certain area"},
 {word:"engross",meaning:"to absorb all the attention or interest of"},
@@ -472,25 +452,20 @@ easy:[
 {word:"estrange",meaning:"to cause someone to be no longer close or sympathetic"},
 {word:"euphemism",meaning:"a mild word substituted for one considered too harsh"},
 {word:"evasive",meaning:"tending to avoid commitment or direct statement"},
-{word:"exacerbate",meaning:"to make a problem, bad situation, or negative feeling worse"},
+{word:"exacerbate",meaning:"to make a problem or bad situation worse"},
 {word:"exonerate",meaning:"to officially absolve from blame or criminal charges"},
 {word:"expedite",meaning:"to make an action happen sooner; to speed up a process"},
-{word:"explicit",meaning:"stated clearly and in detail, leaving no room for confusion"},
 {word:"extol",meaning:"to praise enthusiastically"},
 {word:"fabricate",meaning:"to invent false information; to construct something"},
 {word:"facetious",meaning:"treating serious issues with inappropriate humour"},
 {word:"fallacy",meaning:"a mistaken belief, especially one based on invalid argument"},
-{word:"fanatic",meaning:"a person filled with excessive enthusiasm for a cause"},
 {word:"fastidious",meaning:"very attentive to accuracy and detail; very particular"},
-{word:"fathom",meaning:"to understand after much thought; a unit of depth"},
 {word:"fervent",meaning:"having or displaying a passionate intensity"},
 {word:"filibuster",meaning:"a prolonged speech that obstructs progress in a legislature"},
 {word:"flagrant",meaning:"conspicuously or obviously offensive"},
 {word:"flippant",meaning:"not showing a serious or respectful attitude"},
-{word:"florid",meaning:"having a red flushed complexion; elaborately decorated"},
 {word:"foment",meaning:"to instigate or stir up an undesirable situation"},
 {word:"forbearance",meaning:"patient restraint; tolerance"},
-{word:"forensic",meaning:"relating to methods used in law courts and investigations"},
 {word:"fortitude",meaning:"courage in pain or adversity"},
 {word:"frugal",meaning:"sparing or economical with money or food"},
 {word:"furtive",meaning:"attempting to avoid notice; secretive"},
@@ -508,44 +483,38 @@ easy:[
 {word:"heresy",meaning:"a belief or opinion contrary to orthodox religious doctrine"},
 {word:"hubris",meaning:"excessive pride or self-confidence"},
 {word:"hyperbole",meaning:"exaggerated statements not meant to be taken literally"},
-{word:"hypothetical",meaning:"supposed but not necessarily real or true"},
 {word:"iconoclast",meaning:"a person who attacks cherished beliefs or institutions"},
-{word:"ideology",meaning:"a system of ideas and ideals forming the basis of policy"},
+{word:"ideology",meaning:"a system of ideas forming the basis of policy"},
 {word:"ignominious",meaning:"deserving or causing public disgrace or shame"},
 {word:"immutable",meaning:"unchanging over time or unable to be changed"},
 {word:"impasse",meaning:"a situation in which no progress is possible; a deadlock"},
 {word:"impede",meaning:"to delay or prevent by obstructing"},
-{word:"impertinent",meaning:"not showing proper respect; irrelevant"},
 {word:"impetuous",meaning:"acting or done quickly without thought or care"},
 {word:"impunity",meaning:"exemption from punishment or freedom from consequences"},
 {word:"inadvertent",meaning:"not resulting from deliberate planning; accidental"},
-{word:"incendiary",meaning:"tending to stir up conflict; an arsonist"},
+{word:"incendiary",meaning:"tending to stir up conflict"},
 {word:"incisive",meaning:"intelligently analytical and clear-thinking"},
 {word:"incongruous",meaning:"not in harmony with its surroundings; out of place"},
 {word:"indolent",meaning:"wanting to avoid activity or exertion; lazy"},
-{word:"inept",meaning:"having or showing no skill; incompetent"},
 {word:"inertia",meaning:"a tendency to do nothing or to remain unchanged"},
 {word:"inexorable",meaning:"impossible to stop or prevent; relentless"},
-{word:"inimical",meaning:"tending to obstruct or harm; hostile"},
 {word:"insipid",meaning:"lacking flavour; lacking vigour or interest"},
 {word:"insolent",meaning:"showing a rude and arrogant lack of respect"},
 {word:"insular",meaning:"ignorant of or uninterested in the wider world; narrow-minded"},
 {word:"intransigent",meaning:"unwilling to change views or agree to compromise"},
 {word:"invective",meaning:"insulting, abusive, or highly critical language"},
 {word:"irascible",meaning:"having or showing a tendency to be easily angered"},
-{word:"irresolute",meaning:"showing or feeling hesitancy; uncertain"},
 {word:"jeopardise",meaning:"to put someone or something into a situation of danger"},
 {word:"laconic",meaning:"using very few words; brief and concise"},
 {word:"lament",meaning:"to express passionate grief or regret for something"},
-{word:"languish",meaning:"to lose or lack vitality; to be forced to remain somewhere"},
+{word:"languish",meaning:"to lose or lack vitality; to be kept in poor conditions"},
 {word:"laud",meaning:"to praise highly, especially in a public context"},
 {word:"lethargic",meaning:"affected by lethargy; sluggish and apathetic"},
 {word:"levity",meaning:"the treatment of a serious matter with humour"},
-{word:"listless",meaning:"lacking energy or enthusiasm; lethargic"},
 {word:"loquacious",meaning:"tending to talk a great deal; talkative"},
 {word:"lucid",meaning:"expressed clearly; easy to understand"},
 {word:"lurid",meaning:"presented in vividly shocking terms; sensational"},
-{word:"magnanimous",meaning:"generous or forgiving, especially to a rival or less powerful"},
+{word:"magnanimous",meaning:"generous or forgiving, especially to a rival"},
 {word:"malice",meaning:"the intention to do evil or cause injury to another"},
 {word:"malleable",meaning:"easily influenced; pliable"},
 {word:"mandate",meaning:"an official order or commission to do something"},
@@ -588,17 +557,16 @@ easy:[
 {word:"pernicious",meaning:"having a harmful effect, especially in a gradual subtle way"},
 {word:"pertinent",meaning:"relevant or applicable to a particular matter"},
 {word:"pervasive",meaning:"spreading widely throughout an area or group"},
-{word:"pessimism",meaning:"a tendency to see the worst aspect of things"},
 {word:"petulant",meaning:"childishly sulky or bad-tempered"},
 {word:"placate",meaning:"to make someone less angry or hostile; to appease"},
-{word:"platitude",meaning:"a remark or statement that is used too often to be interesting"},
+{word:"platitude",meaning:"a remark that is used too often to be interesting"},
 {word:"plausible",meaning:"seeming reasonable or probable; apparently valid"},
 {word:"poignant",meaning:"evoking a keen sense of sadness or regret"},
 {word:"polarise",meaning:"to divide into two sharply contrasting groups"},
 {word:"polemic",meaning:"a strong written or spoken attack on someone's opinions"},
 {word:"pompous",meaning:"affectedly and irritatingly grand or self-important"},
 {word:"pragmatic",meaning:"dealing with things sensibly and realistically"},
-{word:"precarious",meaning:"not securely held or in position; dangerously likely to fail"},
+{word:"precarious",meaning:"not securely held; dangerously likely to fail"},
 {word:"precocious",meaning:"having developed certain abilities at an earlier age than usual"},
 {word:"pretentious",meaning:"attempting to impress by affecting greater importance"},
 {word:"prodigal",meaning:"spending money or resources freely and recklessly"},
@@ -613,11 +581,9 @@ easy:[
 {word:"quixotic",meaning:"extremely idealistic; unrealistic and impractical"},
 {word:"ramification",meaning:"a consequence of an action, especially when complex"},
 {word:"rancour",meaning:"bitterness or resentfulness, especially when long-standing"},
-{word:"raucous",meaning:"making or constituting a disturbingly harsh noise"},
 {word:"recalcitrant",meaning:"having an obstinately uncooperative attitude"},
-{word:"reclusive",meaning:"avoiding the company of others; solitary"},
 {word:"rectify",meaning:"to put right; to correct"},
-{word:"redress",meaning:"remedy or set right an undesirable situation"},
+{word:"redress",meaning:"to remedy or set right an undesirable situation"},
 {word:"refute",meaning:"to prove a statement or person to be wrong"},
 {word:"relegate",meaning:"to place in a lower or less important position"},
 {word:"remorse",meaning:"deep regret or guilt for a wrong committed"},
@@ -636,11 +602,8 @@ easy:[
 {word:"scrutinise",meaning:"to examine or inspect closely and thoroughly"},
 {word:"secular",meaning:"not connected with religious or spiritual matters"},
 {word:"seditious",meaning:"inciting or causing people to rebel against authority"},
-{word:"serene",meaning:"calm, peaceful, and untroubled; tranquil"},
 {word:"shrewd",meaning:"having sharp powers of judgement; astute"},
-{word:"slanderous",meaning:"making false and damaging statements about someone"},
 {word:"solemn",meaning:"formal and dignified; deeply sincere"},
-{word:"solicit",meaning:"to ask for or try to obtain something from someone"},
 {word:"sophistry",meaning:"the use of clever but false arguments"},
 {word:"specious",meaning:"superficially plausible but actually wrong"},
 {word:"sporadic",meaning:"occurring at irregular intervals; not regular"},
@@ -652,7 +615,6 @@ easy:[
 {word:"subversive",meaning:"seeking or intended to undermine an established system"},
 {word:"succinct",meaning:"briefly and clearly expressed"},
 {word:"supercilious",meaning:"behaving as if one thinks one is superior to others"},
-{word:"suppress",meaning:"to forcibly put an end to; to prevent from being expressed"},
 {word:"surreptitious",meaning:"kept secret, especially because it would be disapproved of"},
 {word:"sycophant",meaning:"a person who acts obsequiously to gain advantage"},
 {word:"tacit",meaning:"understood or implied without being stated"},
@@ -664,19 +626,15 @@ easy:[
 {word:"tractable",meaning:"easy to deal with; manageable"},
 {word:"transgress",meaning:"to go beyond the limits set by a moral principle or law"},
 {word:"transient",meaning:"lasting only for a short time; temporary"},
-{word:"treacherous",meaning:"guilty of betrayal; dangerous and unpredictable"},
 {word:"trite",meaning:"overused and consequently of little import; lacking originality"},
 {word:"truculent",meaning:"eager or quick to argue or fight; aggressive"},
 {word:"turbulent",meaning:"characterised by conflict, disorder, or confusion"},
 {word:"ubiquitous",meaning:"present, appearing, or found everywhere"},
 {word:"unequivocal",meaning:"leaving no doubt; unambiguous"},
-{word:"unfetter",meaning:"to release from restraint or inhibition"},
-{word:"unilateral",meaning:"performed by or affecting only one person, group, or country"},
 {word:"vacillate",meaning:"to waver between different opinions; to be indecisive"},
 {word:"vehement",meaning:"showing strong feeling; forceful, passionate, or intense"},
 {word:"venerate",meaning:"to regard with great respect; to revere"},
 {word:"verbose",meaning:"using or expressed in more words than are needed"},
-{word:"vex",meaning:"to make someone feel annoyed, puzzled, or worried"},
 {word:"vicarious",meaning:"experienced in the imagination through the feelings of another"},
 {word:"vilify",meaning:"to speak or write about in an abusively disparaging manner"},
 {word:"vindicate",meaning:"to clear of blame or suspicion; to show to be right"},
@@ -685,7 +643,6 @@ easy:[
 {word:"vitriolic",meaning:"filled with bitter criticism or malice"},
 {word:"volatile",meaning:"liable to change rapidly and unpredictably, especially for the worse"},
 {word:"voracious",meaning:"wanting or devouring great quantities; very eager"},
-{word:"wary",meaning:"feeling or showing caution about possible dangers"},
 {word:"wield",meaning:"to hold and use a weapon or tool; to have and exercise power"},
 {word:"zealot",meaning:"a person who is fanatical and uncompromising in pursuit of ideals"},
 {word:"zenith",meaning:"the time at which something is most powerful or successful"}
@@ -695,20 +652,13 @@ hard:[
 {word:"absolution",meaning:"formal release from guilt, obligation, or punishment"},
 {word:"abstention",meaning:"the act of refraining from voting; deliberate restraint"},
 {word:"accretion",meaning:"growth or increase by gradual external addition"},
-{word:"acrimony",meaning:"bitterness or ill feeling, especially in a dispute"},
 {word:"adjudicate",meaning:"to make a formal judgment on a disputed matter"},
 {word:"admonition",meaning:"a firm warning or reprimand"},
-{word:"adulteration",meaning:"the action of making something impure by adding foreign material"},
 {word:"advocacy",meaning:"public support for or recommendation of a cause or policy"},
-{word:"aggrandisement",meaning:"an increase in the power, status, or wealth of a person"},
-{word:"agnosticism",meaning:"the belief that the existence of God is unknown or unknowable"},
 {word:"allegiance",meaning:"loyalty or commitment to a superior or a cause"},
-{word:"alleviation",meaning:"the action of making suffering, deficiency, or a problem less severe"},
 {word:"altruistic",meaning:"showing a disinterested and selfless concern for others"},
 {word:"ambivalence",meaning:"having mixed feelings or contradictory ideas about something"},
-{word:"amelioration",meaning:"the act of making something bad or unsatisfactory better"},
 {word:"anarchism",meaning:"the political philosophy that rejects all compulsory forms of authority"},
-{word:"anachronistic",meaning:"belonging to a period other than that being portrayed"},
 {word:"anecdotal",meaning:"not necessarily true or reliable because based on personal accounts"},
 {word:"antagonism",meaning:"active hostility or opposition between people or groups"},
 {word:"antiquated",meaning:"old-fashioned or outdated"},
@@ -717,196 +667,134 @@ hard:[
 {word:"arbitration",meaning:"the use of an arbitrator to settle a dispute"},
 {word:"arcane",meaning:"understood by few; mysterious or secret"},
 {word:"articulation",meaning:"the action of expressing something in words; clear pronunciation"},
-{word:"aspersion",meaning:"an attack on the reputation or integrity of someone"},
 {word:"assiduous",meaning:"showing great care and perseverance"},
-{word:"attrition",meaning:"the process of gradually reducing the strength or effectiveness"},
 {word:"audacious",meaning:"showing a willingness to take surprisingly bold risks"},
-{word:"auspicious",meaning:"conducive to success; giving or being a sign of future success"},
+{word:"auspicious",meaning:"conducive to success; giving a sign of future success"},
 {word:"authoritarian",meaning:"favouring or enforcing strict obedience to authority"},
 {word:"autonomous",meaning:"having the freedom to act independently"},
-{word:"avarice",meaning:"extreme greed for wealth or material gain"},
 {word:"belligerence",meaning:"aggressive or warlike behaviour"},
 {word:"beneficence",meaning:"the quality of being kind and doing good"},
 {word:"bureaucracy",meaning:"a system of government with many complicated rules and processes"},
 {word:"camaraderie",meaning:"mutual trust and friendship among people who spend time together"},
 {word:"capitulation",meaning:"the action of surrendering or agreeing to terms"},
-{word:"capriciousness",meaning:"the tendency to change opinion suddenly or behave unpredictably"},
 {word:"categorical",meaning:"without exceptions or conditions; absolute"},
-{word:"censorship",meaning:"the suppression of speech, public communication, or other information"},
-{word:"chauvinism",meaning:"exaggerated or aggressive patriotism; prejudiced belief in superiority"},
+{word:"censorship",meaning:"the suppression of speech or public communication"},
+{word:"chauvinism",meaning:"exaggerated patriotism; prejudiced belief in the superiority of one's own group"},
 {word:"circumlocution",meaning:"the use of many words where fewer would do; evasive talk"},
 {word:"circumspect",meaning:"wary and unwilling to take risks; careful"},
-{word:"clairvoyance",meaning:"the supposed faculty of perceiving things beyond normal sensory contact"},
-{word:"clandestine",meaning:"kept secret, especially because it would not be approved of"},
 {word:"clemency",meaning:"mercy and leniency shown towards offenders or enemies"},
 {word:"coercion",meaning:"the practice of persuading someone to do something by using force"},
-{word:"cognisance",meaning:"knowledge or awareness of something"},
-{word:"collateral",meaning:"something pledged as security for repayment of a loan"},
-{word:"combustible",meaning:"able to catch fire and burn easily; easily excited"},
+{word:"collateral",meaning:"something pledged as security; additional but secondary"},
 {word:"commensurate",meaning:"corresponding in size or degree; in proportion"},
 {word:"compunction",meaning:"a feeling of guilt or moral scruple about doing something"},
-{word:"conciliation",meaning:"the action of making peace; the action of ending a dispute"},
+{word:"conciliation",meaning:"the action of making peace; ending a dispute"},
 {word:"condescension",meaning:"an attitude of patronising superiority"},
-{word:"confiscation",meaning:"the action of taking property with authority"},
-{word:"connotation",meaning:"an idea or feeling that a word invokes in addition to its literal meaning"},
+{word:"connotation",meaning:"an idea or feeling that a word invokes beyond its literal meaning"},
 {word:"contentious",meaning:"causing or likely to cause an argument; controversial"},
 {word:"contrition",meaning:"the state of feeling remorseful and penitent"},
-{word:"controversial",meaning:"giving rise or likely to give rise to public disagreement"},
 {word:"conviction",meaning:"a firmly held belief or opinion; a formal declaration of guilt"},
-{word:"copious",meaning:"abundant in supply or quantity"},
-{word:"correlate",meaning:"to have a mutual relationship or connection"},
 {word:"corroborate",meaning:"to confirm or give support to a statement or theory"},
 {word:"credulous",meaning:"having or showing too great a readiness to believe things"},
 {word:"culpability",meaning:"responsibility for a fault or wrong; blameworthiness"},
-{word:"curtailment",meaning:"the action of reducing or imposing a restriction on something"},
 {word:"cynicism",meaning:"an inclination to believe that people are motivated by self-interest"},
 {word:"deference",meaning:"humble submission and respect"},
 {word:"defiance",meaning:"open resistance; bold disobedience"},
 {word:"delineate",meaning:"to describe or portray something precisely"},
-{word:"demagogy",meaning:"political activity or practices that seek support by appealing to emotions"},
 {word:"denunciation",meaning:"public condemnation of someone or something"},
 {word:"depravity",meaning:"moral corruption; wickedness"},
 {word:"deprecate",meaning:"to express disapproval of; to belittle"},
 {word:"derogatory",meaning:"showing a critical or disrespectful attitude"},
-{word:"desiccate",meaning:"to remove moisture from; to dry out"},
 {word:"desultory",meaning:"lacking a plan, purpose, or enthusiasm"},
-{word:"detention",meaning:"the action of detaining someone; confinement"},
 {word:"determinism",meaning:"the doctrine that events are determined by prior causes"},
 {word:"detriment",meaning:"the state of being harmed or damaged"},
 {word:"devolution",meaning:"the transfer of power from central to local government"},
-{word:"diatribe",meaning:"a forceful and bitter verbal attack"},
 {word:"dictatorship",meaning:"a country governed by a dictator; absolute authority"},
-{word:"differentiation",meaning:"the action of making or becoming different"},
 {word:"disenfranchise",meaning:"to deprive of the right to vote"},
 {word:"dispassionate",meaning:"not influenced by strong emotion; rational and impartial"},
 {word:"disseminate",meaning:"to spread something, especially information, widely"},
 {word:"dissonance",meaning:"a tension or clash resulting from the combination of things"},
-{word:"docile",meaning:"ready to accept control or instruction; submissive"},
 {word:"dogmatism",meaning:"the tendency to lay down principles as incontrovertibly true"},
 {word:"duplicitous",meaning:"deceitful in speech or conduct"},
-{word:"ecclesiastical",meaning:"relating to the Christian Church or its clergy"},
 {word:"egalitarian",meaning:"believing in or based on the principle of equality"},
 {word:"egotism",meaning:"excessive preoccupation with one's own interests"},
 {word:"elitism",meaning:"the belief that a society should be led by an elite"},
 {word:"embezzlement",meaning:"theft of money placed in one's trust by one's employer"},
-{word:"eminent",meaning:"famous and respected within a particular sphere"},
 {word:"empiricism",meaning:"the theory that knowledge derives from sensory experience"},
 {word:"encroachment",meaning:"intrusion on a person's territory or rights"},
 {word:"endemic",meaning:"regularly found among a particular people or in a certain area"},
-{word:"enfranchise",meaning:"to give the right to vote to; to free from slavery"},
 {word:"equivocation",meaning:"the use of ambiguous language to conceal the truth"},
 {word:"eradicate",meaning:"to destroy completely; to put an end to"},
-{word:"evasion",meaning:"the action of evading something; avoidance"},
 {word:"exacerbation",meaning:"the action of making a situation worse"},
 {word:"exoneration",meaning:"the action of officially absolving someone from blame"},
 {word:"exploitation",meaning:"the action of making use of something in an unfair way"},
-{word:"expropriation",meaning:"the action of the state taking property from its owner"},
 {word:"extortion",meaning:"the practice of obtaining something through force or threats"},
 {word:"extrapolate",meaning:"to extend a conclusion into an area not directly observed"},
-{word:"exuberance",meaning:"the quality of being full of energy, excitement, and cheerfulness"},
 {word:"fabrication",meaning:"the action of inventing false information"},
-{word:"facile",meaning:"appearing neat and comprehensive by ignoring difficulty"},
 {word:"factionalism",meaning:"the state of being split into factions; internal conflict"},
 {word:"fallacious",meaning:"based on a mistaken belief; logically unsound"},
 {word:"fanaticism",meaning:"the quality of being fanatical; excessive enthusiasm"},
-{word:"fastidiousness",meaning:"the quality of being very attentive to detail"},
 {word:"fatalism",meaning:"the belief that all events are predetermined and inevitable"},
-{word:"flagitious",meaning:"criminal; villainous"},
-{word:"flippancy",meaning:"lack of respect or seriousness; treating something as trivial"},
 {word:"formidable",meaning:"inspiring fear or respect through impressive qualities"},
-{word:"fraternise",meaning:"to associate or form a friendship with someone"},
 {word:"fraudulent",meaning:"obtained, done by, or involving deception"},
-{word:"fundamentalism",meaning:"a form of religion that upholds belief in strict interpretation"},
+{word:"fundamentalism",meaning:"strict adherence to the basic principles of any subject"},
 {word:"futility",meaning:"the quality of having no useful result; pointlessness"},
-{word:"garbled",meaning:"reproduce in a confused or distorted way"},
-{word:"garrulousness",meaning:"the quality of being excessively talkative"},
-{word:"generalisation",meaning:"a broad statement or idea formed from specific cases"},
-{word:"glorification",meaning:"the presentation of something as laudable or admirable"},
+{word:"generalisation",meaning:"a broad statement formed from specific cases"},
 {word:"governance",meaning:"the action or manner of governing a state or organisation"},
-{word:"gratification",meaning:"pleasure, especially when gained from the satisfaction of a desire"},
 {word:"harangue",meaning:"a lengthy and aggressive speech or tirade"},
 {word:"hegemony",meaning:"leadership or dominance, especially of one state over others"},
-{word:"hyperbole",meaning:"exaggerated statements not meant to be taken literally"},
 {word:"hypocrisy",meaning:"the practice of claiming to have higher moral standards than is the case"},
-{word:"ideology",meaning:"a system of ideas and ideals that forms economic or political theory"},
+{word:"ideology",meaning:"a system of ideas that forms economic or political theory"},
 {word:"ignominy",meaning:"public shame or disgrace"},
-{word:"immutable",meaning:"unchanging over time or unable to be changed"},
 {word:"impartiality",meaning:"treatment or judgment of all parties with equal fairness"},
 {word:"impeachment",meaning:"the action of calling into question the integrity of someone"},
 {word:"imperialism",meaning:"a policy of extending a country's power through colonisation"},
-{word:"implication",meaning:"a conclusion drawn from something not explicitly stated"},
 {word:"impunity",meaning:"exemption from punishment or freedom from consequences"},
 {word:"incendiary",meaning:"tending to stir up conflict; relating to fire-raising"},
-{word:"incoherence",meaning:"the quality of being unclear or difficult to understand"},
-{word:"incongruity",meaning:"the state of being incongruous; incompatibility"},
 {word:"indoctrination",meaning:"the process of teaching a person to accept a set of beliefs"},
-{word:"inefficacy",meaning:"failure to produce the desired effect"},
 {word:"inevitability",meaning:"the quality of being certain to happen"},
 {word:"inflammatory",meaning:"tending to arouse anger or strong feeling"},
-{word:"ingratitude",meaning:"a discreditable lack of gratitude"},
-{word:"inquisition",meaning:"a period of prolonged and intensive questioning"},
 {word:"insurrection",meaning:"a violent uprising against authority"},
-{word:"interpolate",meaning:"to insert something between fixed points; to alter text by inserting"},
-{word:"intimidation",meaning:"the action of intimidating someone, or the state of being intimidated"},
+{word:"intimidation",meaning:"the action of intimidating someone"},
 {word:"irreconcilable",meaning:"incompatible; not able to be resolved"},
-{word:"irreverence",meaning:"a lack of respect for people or things that are generally respected"},
-{word:"judicature",meaning:"the administration of justice"},
 {word:"jurisprudence",meaning:"the theory or philosophy of law"},
 {word:"lachrymose",meaning:"tearful or given to weeping; inducing tears"},
 {word:"laudatory",meaning:"expressing praise and commendation"},
-{word:"legalisation",meaning:"the process of making something that was illegal lawful"},
 {word:"legitimacy",meaning:"conformity to the law or to rules; the quality of being legitimate"},
-{word:"lethargic",meaning:"affected by lethargy; sluggish and apathetic"},
 {word:"liberalisation",meaning:"the removal or loosening of restrictions on something"},
-{word:"litigant",meaning:"a person involved in a lawsuit"},
 {word:"litigation",meaning:"the process of taking legal action"},
 {word:"magnanimity",meaning:"the quality of being generous or forgiving, especially to a rival"},
 {word:"malfeasance",meaning:"wrongdoing, especially by a public official"},
 {word:"malignant",meaning:"very virulent or infectious; evil in nature or effect"},
 {word:"manipulation",meaning:"the action of controlling or influencing someone cleverly"},
-{word:"marginalisation",meaning:"the treatment of a person, group, or concept as insignificant"},
-{word:"materialism",meaning:"a tendency to consider material possessions as more important than values"},
+{word:"marginalisation",meaning:"the treatment of a person or group as insignificant"},
 {word:"mendacity",meaning:"untruthfulness; the tendency to tell lies"},
-{word:"mercantile",meaning:"relating to trade or commerce"},
 {word:"meritocracy",meaning:"government or holding of power by people selected on ability"},
-{word:"militarism",meaning:"the belief that a country should maintain a strong military capability"},
-{word:"misappropriation",meaning:"the dishonest or unfair use of funds for one's own use"},
+{word:"misappropriation",meaning:"the dishonest use of funds for one's own purpose"},
 {word:"misrepresentation",meaning:"the action of giving a false or misleading account"},
 {word:"moderation",meaning:"the avoidance of excess or extremes"},
 {word:"moratorium",meaning:"a temporary prohibition of an activity"},
 {word:"multifarious",meaning:"many and of various types"},
-{word:"munificence",meaning:"more than sufficient generosity"},
 {word:"nationalism",meaning:"identification with one's own nation and support for its interests"},
 {word:"nepotism",meaning:"the practice of favouring relatives or friends in power"},
 {word:"nihilism",meaning:"the rejection of all religious and moral principles"},
-{word:"obstruction",meaning:"the action of obstructing or the state of being obstructed"},
 {word:"oligarchy",meaning:"a small group of people having control of a country"},
 {word:"oppression",meaning:"prolonged cruel or unjust treatment or control"},
 {word:"ostentation",meaning:"the pretentious display of wealth or ability to impress others"},
-{word:"overbearing",meaning:"unpleasantly overpowering; domineering"},
 {word:"pacification",meaning:"the action of bringing peace to a place or ending conflict"},
-{word:"paradoxical",meaning:"seemingly absurd or self-contradictory"},
-{word:"paternalism",meaning:"the policy of restricting freedoms for the supposed benefit of those affected"},
+{word:"paternalism",meaning:"restricting freedoms for the supposed benefit of those affected"},
 {word:"patronage",meaning:"support given by a patron; the power to control appointments"},
-{word:"penalisation",meaning:"the act of inflicting a penalty for an offence"},
-{word:"pervasiveness",meaning:"the quality of spreading widely throughout an area"},
-{word:"pessimistic",meaning:"tending to see the worst aspect of things"},
 {word:"philanthropy",meaning:"the desire to promote welfare; generous donation for good causes"},
 {word:"polarisation",meaning:"division into two sharply contrasting groups or sets of opinions"},
-{word:"polemic",meaning:"a strong verbal or written attack on someone's opinion or doctrine"},
+{word:"polemic",meaning:"a strong verbal or written attack on someone's opinion"},
 {word:"pragmatism",meaning:"a practical approach to problems and affairs"},
 {word:"prerogative",meaning:"a right or privilege exclusive to a particular individual or class"},
 {word:"propaganda",meaning:"information used to promote a cause or point of view"},
 {word:"proportionality",meaning:"the quality of corresponding in size or degree"},
-{word:"provocation",meaning:"action or speech that makes someone angry; a cause"},
 {word:"prudence",meaning:"the quality of being prudent; cautiousness"},
-{word:"puritanism",meaning:"a strict moral or religious code with intolerance of dissent"},
 {word:"rationalism",meaning:"the practice of treating reason as the basis for belief and knowledge"},
 {word:"reactionary",meaning:"opposing political or social reform; extremely conservative"},
-{word:"reconciliation",meaning:"the restoration of friendly relations; the action of making compatible"},
-{word:"reductionism",meaning:"the practice of analysing complex things in terms of simple components"},
+{word:"reconciliation",meaning:"the restoration of friendly relations"},
 {word:"referendum",meaning:"a general vote by all the electorate on a single political question"},
-{word:"reformation",meaning:"the action or process of reforming an institution or practice"},
 {word:"repatriation",meaning:"the return of someone to their own country"},
 {word:"repercussion",meaning:"an unintended consequence occurring some time after an event"},
 {word:"repression",meaning:"the action of suppressing or restraining by force"},
@@ -914,7 +802,6 @@ hard:[
 {word:"retaliation",meaning:"the action of returning a misdeed with a similar one"},
 {word:"reverence",meaning:"deep respect for someone or something"},
 {word:"rhetoric",meaning:"language designed to have a persuasive or impressive effect"},
-{word:"rigidity",meaning:"the quality of being rigid; strict inflexibility"},
 {word:"scepticism",meaning:"a sceptical attitude; doubt as to the truth of something"},
 {word:"secularism",meaning:"the principle of separation of state from religious institutions"},
 {word:"sedition",meaning:"conduct or speech inciting people to rebel against authority"},
@@ -922,72 +809,54 @@ hard:[
 {word:"stagnation",meaning:"the state of not flowing or moving; lack of activity"},
 {word:"subversion",meaning:"the undermining of the power and authority of an established system"},
 {word:"suppression",meaning:"the action of suppressing something such as an activity"},
-{word:"surveillance",meaning:"close observation especially of a suspected spy or criminal"},
-{word:"susceptibility",meaning:"the state of being likely to be influenced or harmed by something"},
+{word:"surveillance",meaning:"close observation especially of a suspected person"},
 {word:"symbolism",meaning:"the use of symbols to represent ideas or qualities"},
 {word:"totalitarianism",meaning:"a system of government that is centralised and dictatorial"},
 {word:"transgression",meaning:"an act that goes against a law, rule, or code of conduct"},
-{word:"transparency",meaning:"the condition of being transparent; openness; absence of concealment"},
-{word:"tribalism",meaning:"the behaviour and attitudes that stem from strong loyalty to one's tribe"},
-{word:"unilateralism",meaning:"a tendency to act without seeking agreement from others"},
+{word:"transparency",meaning:"openness; the condition of being transparent; absence of concealment"},
+{word:"tribalism",meaning:"behaviour and attitudes that stem from strong loyalty to one's tribe"},
 {word:"utilitarianism",meaning:"the doctrine that actions are right if they benefit the majority"},
 {word:"vehemence",meaning:"the display of strong feeling; fervour"},
 {word:"victimisation",meaning:"the action of singling someone out for cruel treatment"},
-{word:"vigilantism",meaning:"law enforcement undertaken without legal authority"},
 {word:"vindication",meaning:"the action of clearing someone of blame or suspicion"},
-{word:"virtuosity",meaning:"great skill in music or another artistic pursuit"},
-{word:"vulnerability",meaning:"the quality or state of being exposed to the possibility of attack"},
-{word:"whistleblower",meaning:"a person who informs on a person engaging in illicit activity"},
+{word:"vulnerability",meaning:"the quality of being exposed to the possibility of attack"},
 {word:"zealotry",meaning:"the quality of being zealous; fanatical devotion"}
 ],
 difficult:[
 {word:"abrogation",meaning:"the repeal or abolition of a law, right, or formal agreement"},
 {word:"absolutism",meaning:"the principle or the exercise of complete and unrestricted power"},
-{word:"abstemiousness",meaning:"the quality of not allowing oneself much food, drink, or pleasure"},
 {word:"acculturation",meaning:"the process of adopting the cultural traits of another group"},
 {word:"adjudication",meaning:"the action of making a formal judgment on a disputed matter"},
 {word:"adumbrate",meaning:"to report or represent in outline; to indicate faintly"},
-{word:"adventurism",meaning:"the willingness to take risks, especially in foreign policy"},
 {word:"aestheticism",meaning:"the doctrine that beauty is the basic principle from which all others derive"},
 {word:"agglomeration",meaning:"a mass or collection of things; the process of gathering into a mass"},
 {word:"aggrandisement",meaning:"the action of increasing power, status, or wealth"},
-{word:"alarmism",meaning:"the tendency to raise unnecessary alarm about something"},
 {word:"alienation",meaning:"the state of being isolated from a group, activity, or tradition"},
 {word:"allegory",meaning:"a story or visual image with a second distinct meaning"},
 {word:"alliteration",meaning:"the occurrence of the same letter at the beginning of adjacent words"},
-{word:"anachronism",meaning:"a thing that belongs to another time; something out of date"},
-{word:"anarchism",meaning:"the political philosophy rejecting all compulsory government"},
 {word:"anathema",meaning:"something or someone greatly detested or loathed"},
 {word:"anthropocentrism",meaning:"the view that human beings are the central element of the universe"},
 {word:"antithetical",meaning:"directly opposed or contrasted; mutually incompatible"},
 {word:"aphorism",meaning:"a pithy observation which contains a general truth"},
-{word:"apocryphal",meaning:"of doubtful authenticity, although widely circulated"},
 {word:"apotheosis",meaning:"the highest point in the development of something; a perfect example"},
-{word:"appeasement",meaning:"the action of appeasing; the policy of making concessions to avoid conflict"},
+{word:"appeasement",meaning:"the policy of making concessions to avoid conflict"},
 {word:"arbitrariness",meaning:"the quality of being based on random choice rather than reason"},
 {word:"archaism",meaning:"a thing that is very old or old-fashioned"},
-{word:"assiduousness",meaning:"the quality of showing great care, unremitting attention, or effort"},
+{word:"assiduousness",meaning:"the quality of showing great care and unremitting effort"},
 {word:"asymmetrical",meaning:"having parts or aspects that are not equal or equivalent"},
 {word:"atavism",meaning:"the reappearance of a characteristic from a remote ancestor"},
 {word:"authoritarianism",meaning:"enforcement of strict obedience to authority at the expense of freedom"},
 {word:"balkanisation",meaning:"the division of a place into smaller mutually hostile units"},
 {word:"banality",meaning:"the fact of being unimaginative and ordinary; cliché"},
-{word:"belligerence",meaning:"aggressive or warlike behaviour"},
-{word:"beneficence",meaning:"the quality of being kind and doing good"},
 {word:"bifurcation",meaning:"the division of something into two branches"},
-{word:"bureaucratisation",meaning:"the process of becoming controlled by bureaucracy"},
 {word:"cacophony",meaning:"a harsh discordant mixture of sounds"},
 {word:"capitalism",meaning:"an economic system based on private ownership and free markets"},
-{word:"capitulation",meaning:"the action of surrendering or ceasing to resist"},
 {word:"casuistry",meaning:"the use of clever but unsound reasoning, especially in ethical matters"},
-{word:"categorisation",meaning:"the process of dividing things into groups according to type"},
 {word:"causality",meaning:"the relationship between cause and effect"},
 {word:"centralisation",meaning:"concentration of control of an activity under a single authority"},
 {word:"chauvinism",meaning:"exaggerated patriotism; a belief in the superiority of one's own group"},
 {word:"circumlocution",meaning:"the use of many words where fewer would suffice; verbosity"},
-{word:"circumspection",meaning:"the quality of being wary and unwilling to take risks"},
 {word:"clericalism",meaning:"excessive influence of the clergy in politics"},
-{word:"coerciveness",meaning:"the quality of using force or threats to make someone act"},
 {word:"collectivism",meaning:"the practice of giving priority to the group over each individual"},
 {word:"colonialism",meaning:"the policy of acquiring political control over another country"},
 {word:"commodification",meaning:"the process by which something is treated as a mere commodity"},
@@ -995,86 +864,68 @@ difficult:[
 {word:"compartmentalise",meaning:"to divide into sections or categories; to keep separate"},
 {word:"complacency",meaning:"a feeling of smug or uncritical satisfaction with oneself"},
 {word:"conceptualisation",meaning:"the action of forming a concept or idea of something"},
-{word:"conciliation",meaning:"the action of stopping someone from being angry or discontented"},
 {word:"conflation",meaning:"the merging of two or more sets of information into one"},
-{word:"conservatism",meaning:"commitment to traditional values and ideas and resistance to change"},
-{word:"conspicuous",meaning:"standing out so as to be clearly visible; attracting notice"},
+{word:"conservatism",meaning:"commitment to traditional values and resistance to change"},
 {word:"constructivism",meaning:"a theory that knowledge is constructed from experience"},
 {word:"contemporaneous",meaning:"existing or occurring at the same time"},
 {word:"contextualisation",meaning:"the consideration of something within its broader context"},
 {word:"contravention",meaning:"action that violates a law, treaty, or other agreement"},
-{word:"conventionalism",meaning:"adherence to conventional behaviour"},
 {word:"corroboration",meaning:"evidence which confirms or supports a statement"},
-{word:"cosmopolitanism",meaning:"familiarity with and at ease in many different countries and cultures"},
+{word:"cosmopolitanism",meaning:"familiarity with and ease in many different countries and cultures"},
 {word:"counterintuitive",meaning:"contrary to intuition or common sense expectation"},
 {word:"credentialism",meaning:"excessive reliance on credentials as indicators of ability"},
-{word:"criminalisation",meaning:"the process by which something becomes illegal"},
-{word:"decentralisation",meaning:"the transfer of control from central to local areas"},
 {word:"deconstruction",meaning:"the analysis of text to reveal its assumptions and contradictions"},
 {word:"dehumanisation",meaning:"the process of depriving a person of positive human qualities"},
-{word:"demagoguery",meaning:"political activity or practices that seek support by appealing to desires"},
+{word:"demagoguery",meaning:"political practices that seek support by appealing to desires and fears"},
 {word:"democratisation",meaning:"the introduction of a democratic system"},
-{word:"depoliticisation",meaning:"the process of making something less political"},
-{word:"desecularisation",meaning:"a process in which religion reasserts its influence in public life"},
 {word:"determinism",meaning:"the doctrine that all events are caused by factors beyond free will"},
-{word:"dialecticism",meaning:"the practice of arriving at truth by the exchange of logical arguments"},
-{word:"differentiation",meaning:"the action of distinguishing things as different"},
+{word:"dialecticism",meaning:"the practice of arriving at truth by exchange of logical arguments"},
 {word:"disenfranchisement",meaning:"the state of being deprived of the right to vote"},
-{word:"disestablishment",meaning:"the withdrawal of state support from a Church"},
-{word:"disintermediation",meaning:"the removal of an intermediary in a supply chain"},
-{word:"disproportionality",meaning:"the state of being disproportionate"},
 {word:"dissimulation",meaning:"concealment of one's thoughts, feelings, or character"},
 {word:"dogmatism",meaning:"the tendency to lay down principles as incontrovertibly true"},
 {word:"ecumenism",meaning:"the principle of promoting unity among the world's Christian churches"},
 {word:"egalitarianism",meaning:"the doctrine that all people are equal and deserve equal rights"},
 {word:"empiricism",meaning:"the theory that all knowledge is based on experience"},
 {word:"enculturation",meaning:"the process by which a person assimilates the culture of a group"},
-{word:"enlightenment",meaning:"the action of enlightening or being enlightened; a movement emphasising reason"},
 {word:"epistemology",meaning:"the branch of philosophy concerned with the theory of knowledge"},
 {word:"equivocation",meaning:"the use of ambiguous language to avoid committing to a view"},
 {word:"essentialism",meaning:"the view that things have a set of attributes that make them what they are"},
 {word:"ethnocentrism",meaning:"evaluation of other cultures according to one's own cultural standards"},
 {word:"existentialism",meaning:"a philosophical theory emphasising individual freedom and responsibility"},
 {word:"expansionism",meaning:"the policy of territorial or economic expansion"},
-{word:"expropriations",meaning:"seizure of property by the state"},
 {word:"extrapolation",meaning:"the extension of a method or conclusion beyond its known range"},
-{word:"factionalism",meaning:"the state of division into competing groups"},
 {word:"falsifiability",meaning:"the capacity of a theory to be contradicted by evidence"},
 {word:"fatalism",meaning:"the belief that all events are predetermined and inevitable"},
 {word:"fundamentalism",meaning:"strict adherence to the basic principles of any subject or discipline"},
 {word:"globalisation",meaning:"the process by which the world becomes interconnected"},
 {word:"gradualism",meaning:"a policy of gradual rather than sudden or radical change"},
-{word:"hegemony",meaning:"leadership or dominance, especially of one country over others"},
 {word:"heterodoxy",meaning:"the holding of opinions at variance with established doctrine"},
 {word:"homogenisation",meaning:"the process of making things the same throughout"},
 {word:"humanitarianism",meaning:"the promotion of human welfare and the alleviation of suffering"},
 {word:"hybridisation",meaning:"the process of combining different elements to create something new"},
-{word:"hysteresis",meaning:"the dependence of a system's state on its history"},
 {word:"iconoclasm",meaning:"the action of attacking or assertively rejecting cherished beliefs"},
 {word:"idealism",meaning:"the practice of forming or pursuing ideals; the view that ideas are real"},
 {word:"imperialism",meaning:"a policy of extending a country's power and influence through colonisation"},
 {word:"incrementalism",meaning:"a policy of making changes by small degrees"},
-{word:"indoctrination",meaning:"the process of teaching a person to accept a set of beliefs uncritically"},
+{word:"indoctrination",meaning:"the process of teaching a person to accept beliefs uncritically"},
 {word:"instrumentalism",meaning:"a pragmatic philosophy in which the truth of ideas is judged by their utility"},
-{word:"insurrectionism",meaning:"the doctrine or advocacy of rebellion against authority"},
 {word:"interventionism",meaning:"the policy of intervening in the affairs of another country"},
 {word:"irredentism",meaning:"the policy of advocating the restoration of territory to its parent country"},
 {word:"isolationism",meaning:"a policy of remaining apart from the political affairs of other countries"},
-{word:"juxtaposition",meaning:"the fact of two things being seen or placed close together for contrast"},
+{word:"juxtaposition",meaning:"the fact of two things placed close together to highlight contrast"},
 {word:"jurisprudence",meaning:"the theory or philosophy of law"},
 {word:"legitimisation",meaning:"the process of making something legitimate"},
 {word:"liberalism",meaning:"a political philosophy of liberty and equality"},
 {word:"libertarianism",meaning:"an extreme laissez-faire political philosophy advocating minimal government"},
 {word:"macroeconomics",meaning:"the part of economics concerned with large-scale factors"},
-{word:"marginalisation",meaning:"the process of treating a person, group, or concept as insignificant"},
-{word:"materialism",meaning:"a tendency to consider material possessions and comfort as more important"},
+{word:"marginalisation",meaning:"the process of treating a person or group as insignificant"},
+{word:"materialism",meaning:"a tendency to consider material possessions more important than values"},
 {word:"meritocracy",meaning:"government by those selected on the basis of their ability"},
 {word:"metaphysics",meaning:"the branch of philosophy dealing with the nature of existence"},
 {word:"microeconomics",meaning:"the part of economics concerned with individual factors"},
 {word:"militarism",meaning:"the belief that a country should maintain a strong military capability"},
 {word:"modernisation",meaning:"the process of making something modern"},
-{word:"monopolisation",meaning:"the acquisition of exclusive possession or control of something"},
-{word:"multiculturalism",meaning:"the presence of, or support for the presence of, several distinct cultures"},
+{word:"multiculturalism",meaning:"the presence of, or support for, several distinct cultures within one society"},
 {word:"multilateralism",meaning:"the practice of participation by three or more parties in diplomacy"},
 {word:"nationalism",meaning:"identification with one's nation and support for its interests"},
 {word:"neoconservatism",meaning:"a form of conservatism associated with assertive foreign policy"},
@@ -1082,31 +933,24 @@ difficult:[
 {word:"nepotism",meaning:"the unfair practice of favouring relatives or close friends"},
 {word:"objectivism",meaning:"the tendency to stress objectivity in treating reality"},
 {word:"obstructionism",meaning:"the practice of deliberately impeding or delaying legislation"},
-{word:"oligarchical",meaning:"of or relating to an oligarchy"},
-{word:"opportunism",meaning:"the practice of taking advantage of circumstances with little regard for principle"},
+{word:"opportunism",meaning:"taking advantage of circumstances with little regard for principle"},
 {word:"orthodoxy",meaning:"authorised or generally accepted theory, doctrine, or practice"},
 {word:"ostracism",meaning:"exclusion from a society or group"},
 {word:"pacifism",meaning:"the belief that war and violence are unjustifiable"},
-{word:"paternalism",meaning:"the policy of restricting freedoms for people's supposed benefit"},
-{word:"patronage",meaning:"support given by a patron; power to control appointments"},
-{word:"phenomenology",meaning:"the science of phenomena as distinct from that of the nature of being"},
-{word:"pluralism",meaning:"a condition in which two or more groups coexist while maintaining their differences"},
-{word:"polarisation",meaning:"division into two sharply contrasting groups or sets of opinions"},
+{word:"paternalism",meaning:"restricting freedoms for people's supposed benefit"},
+{word:"phenomenology",meaning:"the science of phenomena as distinct from the nature of being"},
+{word:"pluralism",meaning:"a condition in which multiple groups coexist while maintaining their differences"},
 {word:"positivism",meaning:"a philosophical system recognising only that which can be scientifically verified"},
-{word:"postmodernism",meaning:"a late-20th-century movement in the arts and philosophy"},
+{word:"postmodernism",meaning:"a late-20th-century movement challenging established conventions"},
 {word:"pragmatism",meaning:"a practical approach to problems and affairs"},
 {word:"proletariat",meaning:"workers or working-class people, regarded collectively"},
-{word:"proportionality",meaning:"the quality of corresponding in size or degree; balance"},
-{word:"protectionism",meaning:"the theory or practice of shielding a country's industries from foreign competition"},
-{word:"provincialism",meaning:"the way of life or mode of thought characteristic of regions outside the capital"},
+{word:"protectionism",meaning:"the theory of shielding a country's industries from foreign competition"},
+{word:"provincialism",meaning:"the way of life characteristic of regions outside the capital"},
 {word:"radicalisation",meaning:"the process by which a person comes to adopt extreme positions"},
 {word:"rationalism",meaning:"the practice of treating reason as the basis of belief and knowledge"},
-{word:"reactionism",meaning:"opposition to political or social reform"},
 {word:"reductionism",meaning:"the practice of analysing complex phenomena in terms of simple components"},
-{word:"relativism",meaning:"the doctrine that knowledge, truth, and morality exist in relation to culture"},
-{word:"republicanism",meaning:"the principles or theory of republican government"},
+{word:"relativism",meaning:"the doctrine that knowledge and morality exist in relation to culture"},
 {word:"revisionism",meaning:"the alteration of accepted views or principles"},
-{word:"scepticism",meaning:"a sceptical attitude; doubt as to the truth of something"},
 {word:"secularism",meaning:"the principle of separation of the state from religious institutions"},
 {word:"sensationalism",meaning:"the presentation of stories in a way that provokes public interest"},
 {word:"separatism",meaning:"the advocacy of a state of political separation"},
@@ -1114,16 +958,14 @@ difficult:[
 {word:"sovereignty",meaning:"supreme power or authority"},
 {word:"structuralism",meaning:"a method of interpretation in which elements of culture are analysed"},
 {word:"subjectivism",meaning:"the doctrine that knowledge is merely subjective"},
-{word:"subversion",meaning:"the undermining of the power and authority of an established system"},
 {word:"supranationalism",meaning:"the principle of transferring decision-making power to a supranational body"},
 {word:"supremacism",meaning:"the belief that a particular group is superior to all others"},
 {word:"syncretism",meaning:"the amalgamation of different religions, cultures, or schools of thought"},
 {word:"technocracy",meaning:"government or control of society by technical experts"},
 {word:"theocracy",meaning:"a system of government in which priests rule in the name of God"},
-{word:"totalitarianism",meaning:"a system of government that is centralised, dictatorial, and requires subservience"},
+{word:"totalitarianism",meaning:"a system of government that is centralised, dictatorial, and demands subservience"},
 {word:"transcendentalism",meaning:"a 19th-century idealist philosophical and social movement"},
 {word:"transgression",meaning:"an act that goes against a law, rule, or code of conduct"},
-{word:"trilateralism",meaning:"the doctrine of cooperation between three countries or groups"},
 {word:"triumphalism",meaning:"excessive exultation over one's success or achievements"},
 {word:"tyranny",meaning:"cruel and oppressive government or rule"},
 {word:"utopianism",meaning:"the belief in or pursuit of a perfect society"},
@@ -1137,22 +979,38 @@ let currentGame='',currentDiff='',currentWords=[];
 let rTimer=null,pendingGame='';
 let listenIdx=0,listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
 let activeList='All';
-let respellWordsCopy=[];
+// Track whether the diff overlay is open so back button closes it
+let diffOpen=false;
 
-const TOPICS=["Is social media making us more lonely or more connected?","Should school exams be replaced with continuous assessments?","The role of books in the age of the internet","Is ambition a virtue or a source of unhappiness?","How technology is changing the way we communicate","Should cities ban private cars to reduce pollution?","The importance of failure in achieving success","Does modern life give us enough time to think?","Is cricket more than just a sport in India?","Should voting be made compulsory for all citizens?","The value of learning a second language","Are we too dependent on our smartphones?","Should the government regulate social media platforms?","Is capitalism the best economic system we have?","Does the press have too much or too little freedom?","Should capital punishment be abolished worldwide?","Is globalisation doing more harm than good?","Does democracy work better in some cultures than others?","The problem with instant gratification in modern culture","Is nationalism a force for good or a source of conflict?"];
+const TOPICS=["Is social media making us more lonely or more connected?","Should school exams be replaced with continuous assessments?","The role of books in the age of the internet","Is ambition a virtue or a source of unhappiness?","How technology is changing the way we communicate","Should cities ban private cars to reduce pollution?","The importance of failure in achieving success","Does modern life give us enough time to think?","Is cricket more than just a sport in India?","Should voting be made compulsory for all citizens?","The value of learning a second language","Are we too dependent on our smartphones?","Should the government regulate social media platforms?","Is capitalism the best economic system we have?","Does the press have too much or too little freedom?","Is globalisation doing more harm than good?","Does democracy work better in some cultures than others?","The problem with instant gratification in modern culture","Is nationalism a force for good or a source of conflict?","Should capital punishment be abolished worldwide?"];
 
 // ── BOOT ─────────────────────────────────────────
 window.onload=()=>{
   loadStats();renderLib();renderAnalysis();
-  history.replaceState({screen:'home'},'','');
+  // Replace state so home is always the base — never exits the site on back
+  history.replaceState({screen:'home',diff:false},'','');
 };
 
+// ── PHONE BACK BUTTON ─────────────────────────────
 window.addEventListener('popstate',e=>{
-  if(e.state&&e.state.screen)showScreen(e.state.screen);
+  // If diff popup is open, close it
+  if(diffOpen){closeDiff();return;}
+  if(e.state&&e.state.screen){
+    showScreen(e.state.screen);
+  } else {
+    // Safety: if no state, go home instead of exiting
+    showScreen('home');
+  }
 });
 
 // ── NAV ──────────────────────────────────────────
-function nav(id){history.pushState({screen:id},'','');showScreen(id);}
+function nav(id){
+  // Close diff popup if open before navigating
+  if(diffOpen)closeDiffSilent();
+  history.pushState({screen:id,diff:false},'','');
+  showScreen(id);
+}
+
 function showScreen(id){
   if(id!=='listen-game'&&'speechSynthesis' in window)window.speechSynthesis.cancel();
   if(id!=='respell-game')clearInterval(rTimer);
@@ -1164,25 +1022,57 @@ function showScreen(id){
   if(id==='analysis')renderAnalysis();
   if(id==='essay-game')initEssay();
 }
+
+function quitGame(){
+  // Quit goes back to choose-game, replacing game screen in history
+  history.replaceState({screen:'choose-game',diff:false},'','');
+  showScreen('choose-game');
+}
+
 function toggleDD(){document.getElementById('dd').classList.toggle('open');}
 function closeDD(){document.getElementById('dd').classList.remove('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.nav-right'))closeDD();});
 
-// ── DIFFICULTY ────────────────────────────────────
-function openDiff(game){pendingGame=game;document.getElementById('diff-ov').classList.add('open');}
-function startGame(diff){
-  document.getElementById('diff-ov').classList.remove('open');
-  currentDiff=diff;currentGame='respell';
-  currentWords=shuffle([...WORDS[diff]]).slice(0,5);
-  respellWordsCopy=[...currentWords];
-  initRespell();
+// Close diff overlay when tapping outside the popup
+document.getElementById('diff-ov').addEventListener('click',function(e){
+  if(e.target===this)closeDiff();
+});
+
+// ── DIFFICULTY POPUP ──────────────────────────────
+// Opens the diff popup AND pushes a history entry so phone back closes it
+function openDiff(game){
+  pendingGame=game;
+  diffOpen=true;
+  document.getElementById('diff-ov').classList.add('open');
+  // Push a history state representing "diff popup open"
+  history.pushState({screen:currentScreenId(),diff:true},'','');
 }
-function openListenDiff(){document.getElementById('listen-diff-ov').classList.add('open');}
-function startListenGame(diff){
-  document.getElementById('listen-diff-ov').classList.remove('open');
-  currentDiff=diff;currentGame='listen';
-  currentWords=shuffle([...WORDS[diff]]).slice(0,10);
-  initListen();
+
+function closeDiff(){
+  // Called by back button click or phone back — go back in history
+  diffOpen=false;
+  document.getElementById('diff-ov').classList.remove('open');
+  history.back();
+}
+
+function closeDiffSilent(){
+  // Close without touching history (used when navigating away programmatically)
+  diffOpen=false;
+  document.getElementById('diff-ov').classList.remove('open');
+}
+
+function currentScreenId(){
+  const active=document.querySelector('.screen.active');
+  return active?active.id:'home';
+}
+
+function startGame(diff){
+  closeDiffSilent();
+  currentDiff=diff;currentGame=pendingGame;
+  currentWords=shuffle([...WORDS[diff]]).slice(0,5);
+  if(!currentWords.length){showNotif('Word bank empty');return;}
+  if(currentGame==='respell')initRespell();
+  else initListen();
 }
 
 // ── RESPELL ───────────────────────────────────────
@@ -1196,9 +1086,7 @@ function initRespell(){
     <div class="words-grid" id="rp-grid"></div>
     <div class="timer-block"><div class="timer-n" id="rp-t">20</div><div class="timer-l">seconds</div></div>`;
   const g=document.getElementById('rp-grid');
-  currentWords.forEach(w=>{
-    const c=document.createElement('div');c.className='wchip';c.textContent=w.word;g.appendChild(c);
-  });
+  currentWords.forEach(w=>{const c=document.createElement('div');c.className='wchip';c.textContent=w.word;g.appendChild(c);});
   clearInterval(rTimer);
   rTimer=setInterval(()=>{
     cd--;
@@ -1230,7 +1118,7 @@ function checkRespell(){
     let status='blank';
     if(!v){blank++;el.classList.add('err');status='blank';}
     else if(v===item.word.toLowerCase()){ok++;el.classList.add('ok');status='ok';}
-    else{err++;el.classList.add('err');status:'err';status='err';}
+    else{err++;el.classList.add('err');status='err';}
     return{item,status,yours:v};
   });
   saveSession('Re-Spell',ok,err,blank);
@@ -1259,18 +1147,11 @@ function renderRespellRes(results,ok,err,blank){
     const yoursHtml=r.status==='err'?`<span class="rw-you">${r.yours} →</span>`:'';
     div.innerHTML=`
       <div class="review-word-header" onclick="toggleMeaning(${i})">
-        <div class="rw-left">
-          ${yoursHtml}
-          <span class="rw-word">${r.item.word}</span>
-          <span class="rw-status ${r.status}">${statusLabel}</span>
-        </div>
+        <div class="rw-left">${yoursHtml}<span class="rw-word">${r.item.word}</span><span class="rw-status ${r.status}">${statusLabel}</span></div>
         <span class="rw-chevron" id="chev-${i}">▶</span>
       </div>
       <div class="review-word-body" id="rwb-${i}">
-        <div class="rw-meaning">
-          <div class="rw-meaning-label">Meaning</div>
-          ${r.item.meaning}
-        </div>
+        <div class="rw-meaning"><div class="rw-meaning-label">Meaning</div>${r.item.meaning}</div>
       </div>`;
     list.appendChild(div);
   });
@@ -1305,7 +1186,7 @@ function renderListenWord(){
       <button class="speak-btn" onclick="speak('${item.word.replace(/'/g,"\\'")}')">▶ hear word</button>
       <input class="spell-in" id="spell-in" placeholder="type spelling..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')submitListen()">
       <div class="listen-btns">
-        <button class="btn-skip" onclick="nav('choose-game')">← back</button>
+        <button class="btn-skip" onclick="quitGame()">← back</button>
         <button class="btn-skip" onclick="skipListen()">skip</button>
         <button class="btn-next" onclick="submitListen()">${isLast?'Finish':'Next →'}</button>
       </div>
@@ -1339,7 +1220,7 @@ function renderListenRes(){
   const acc=currentWords.length>0?Math.round(correct/currentWords.length*100):0;
   const col=v=>v>=70?'var(--success)':v>=40?'var(--warn)':'var(--danger)';
   const wrongHtml=wrongWords.length?`
-    <div class="wrong-list" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
       <div style="padding:10px 14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Review</div>
       ${wrongWords.map(w=>`
         <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
@@ -1360,7 +1241,7 @@ function renderListenRes(){
     </div>
     <div class="acc-block"><div class="acc-n" style="color:${col(acc)}">${acc}%</div><div class="acc-l">Accuracy</div></div>
     ${wrongHtml}
-    <div class="res-btns"><button class="btn-p" onclick="openListenDiff()">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
+    <div class="res-btns"><button class="btn-p" onclick="openDiff('listen')">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
 }
 
 // ── ESSAY ─────────────────────────────────────────
@@ -1397,7 +1278,7 @@ function analyseEssay(){
   const errors=[];
   const words=text.split(/\s+/);
   for(let i=1;i<words.length;i++)
-    if(words[i].toLowerCase().replace(/[.,!?]/g,'')=== words[i-1].toLowerCase().replace(/[.,!?]/g,''))
+    if(words[i].toLowerCase().replace(/[.,!?]/g,'')===words[i-1].toLowerCase().replace(/[.,!?]/g,''))
       errors.push(`Repeated word: "${words[i].replace(/[.,!?]/g,'')}"`)
   const sents=text.split(/[.!?]+/).filter(s=>s.trim());
   if(sents.filter(s=>s.trim().split(/\s+/).length<4).length>2)errors.push('Several very short sentences — try expanding ideas');
