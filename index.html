@@ -16,10 +16,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 .nav-right{display:flex;align-items:center;gap:8px;position:relative;}
 .nav-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:var(--r);cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:13px;transition:all .15s;}
 .nav-btn:hover{border-color:var(--border2);color:var(--text);}
-.dd{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;min-width:160px;z-index:200;display:none;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,.08);}
+.dd{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:4px;min-width:200px;z-index:200;display:none;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,.08);}
 .dd.open{display:flex;}
-.dd-item{padding:10px 12px;border-radius:4px;cursor:pointer;font-size:13px;transition:background .1s;}
+.dd-item{padding:10px 12px;border-radius:4px;cursor:pointer;font-size:13px;transition:background .1s;display:flex;align-items:center;justify-content:space-between;}
 .dd-item:hover{background:var(--bg);}
+.dd-badge{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);background:var(--bg);border:1px solid var(--border);padding:2px 7px;border-radius:100px;}
+.dd-divider{height:1px;background:var(--border);margin:4px 0;}
 .wrap{flex:1;padding:2rem 1.25rem;max-width:480px;width:100%;margin:0 auto;}
 .wrap-c{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
 .home-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2rem;}
@@ -45,8 +47,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 .gr-name{font-weight:500;font-size:14px;}
 .gr-desc{font-size:12px;color:var(--muted);margin-top:2px;}
 .gr-arrow{color:var(--faint);font-size:12px;}
-
-/* OVERLAY — used for difficulty popup */
 .overlay{position:fixed;inset:0;background:rgba(245,244,240,.88);backdrop-filter:blur(2px);z-index:300;display:none;align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
 .popup{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--text);padding:1.5rem 1.25rem;width:100%;max-width:480px;border-radius:var(--r) var(--r) 0 0;}
@@ -58,7 +58,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 .diff-row{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;background:var(--bg);transition:all .15s;}
 .diff-row:hover{border-color:var(--text);}
 .diff-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
-
 .game-wrap{flex:1;padding:1.5rem 1.25rem;display:flex;flex-direction:column;gap:1.25rem;max-width:480px;width:100%;margin:0 auto;}
 .prog{height:2px;background:var(--border);border-radius:1px;}
 .prog-fill{height:100%;background:var(--text);border-radius:1px;transition:width .4s;}
@@ -170,17 +169,52 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 .notif.show{display:block;}
 .empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:13px;line-height:1.6;}
 .varc-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;text-align:center;padding:2rem;}
+/* LEXICON */
+.lex-tabs{display:flex;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem;}
+.lex-tab{flex:1;padding:10px;text-align:center;font-size:13px;cursor:pointer;background:var(--surface);transition:background .1s;font-family:'IBM Plex Sans',sans-serif;}
+.lex-tab.active{background:var(--text);color:var(--bg);font-weight:500;}
+.lex-search{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:var(--r);font-size:14px;font-family:'IBM Plex Sans',sans-serif;outline:none;margin-bottom:1rem;transition:border-color .2s;}
+.lex-search:focus{border-color:var(--text);}
+.lex-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.lex-count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+.lex-add-btn{background:var(--text);color:var(--bg);border:none;padding:8px 14px;border-radius:var(--r);font-size:13px;font-weight:500;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;transition:opacity .15s;}
+.lex-add-btn:hover{opacity:.8;}
+.unlock-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.25rem;margin-bottom:1rem;}
+.unlock-bar-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.unlock-bar-label{font-size:12px;color:var(--muted);}
+.unlock-bar-num{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;}
+.unlock-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.unlock-fill{height:100%;background:var(--text);border-radius:2px;transition:width .6s;}
+.word-cards{display:flex;flex-direction:column;gap:8px;}
+.word-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.word-card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;cursor:pointer;}
+.word-card-head:hover{background:var(--bg);}
+.wc-word{font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:500;}
+.wc-right{display:flex;align-items:center;gap:8px;}
+.wc-lock{font-size:12px;color:var(--success);}
+.wc-locked{font-size:12px;color:var(--faint);}
+.wc-chevron{font-size:11px;color:var(--faint);transition:transform .2s;}
+.wc-chevron.open{transform:rotate(90deg);}
+.word-card-body{display:none;padding:0 14px 14px;}
+.word-card-body.open{display:block;}
+.wc-meaning{font-size:13px;color:var(--muted);line-height:1.6;padding-top:10px;border-top:1px solid var(--border);}
+.wc-delete{margin-top:10px;background:none;border:1px solid var(--border);color:var(--danger);padding:6px 12px;border-radius:var(--r);font-size:12px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;}
+.wc-delete:hover{border-color:var(--danger);}
+.diff-chip{font-size:10px;padding:2px 8px;border-radius:100px;font-family:'IBM Plex Mono',monospace;}
+.diff-chip.easy{background:#f0faf4;color:var(--success);}
+.diff-chip.hard{background:#fdf8f0;color:var(--warn);}
+.diff-chip.difficult{background:#fdf0f0;color:var(--danger);}
+.diff-chip.custom{background:var(--bg);color:var(--muted);border:1px solid var(--border);}
 </style>
 </head>
 <body>
 <div class="notif" id="notif"></div>
 
-<!-- SHARED DIFFICULTY POPUP — one popup, reused for all games -->
 <div class="overlay" id="diff-ov">
   <div class="popup">
     <button class="popup-back" onclick="closeDiff()">← back</button>
     <div class="popup-title">Select difficulty</div>
-    <div class="popup-sub" id="diff-sub">5 words per game</div>
+    <div class="popup-sub">5 words per game</div>
     <div class="diff-list">
       <div class="diff-row" onclick="startGame('easy')">Easy <span class="diff-tag">common but precise words</span></div>
       <div class="diff-row" onclick="startGame('hard')">Hard <span class="diff-tag">editorial & journalism level</span></div>
@@ -189,7 +223,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
   </div>
 </div>
 
-<!-- ADD ARTICLE MODAL -->
 <div class="modal-ov" id="add-modal">
   <div class="modal">
     <div class="modal-title">Add article</div>
@@ -203,6 +236,19 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
   </div>
 </div>
 
+<!-- ADD WORD MODAL — now lives in All Words tab -->
+<div class="modal-ov" id="lex-modal">
+  <div class="modal">
+    <div class="modal-title">Add word to lexicon</div>
+    <input class="m-in" id="lm-word" placeholder="Word" autocomplete="off" autocorrect="off" spellcheck="false">
+    <textarea class="m-in" id="lm-meaning" placeholder="Meaning or definition" style="min-height:80px;resize:none"></textarea>
+    <div class="m-btns">
+      <button class="m-cancel" onclick="closeLexModal()">Cancel</button>
+      <button class="m-save" onclick="saveLexWord()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- HOME -->
 <div class="screen active" id="home">
   <nav>
@@ -210,6 +256,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
     <div class="nav-right">
       <button class="nav-btn" onclick="toggleDD()">menu</button>
       <div class="dd" id="dd">
+        <div class="dd-item" onclick="nav('lexicon')">Lexicon <span class="dd-badge" id="dd-unlock-badge">0 / 0</span></div>
+        <div class="dd-divider"></div>
         <div class="dd-item" onclick="nav('varc')">VARC PYQ</div>
         <div class="dd-item" onclick="nav('library')">Library</div>
         <div class="dd-item" onclick="nav('analysis')">Analysis</div>
@@ -217,7 +265,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
     </div>
   </nav>
   <div class="wrap wrap-c" style="gap:0">
-    <div class="home-label">Spell IT</div>
+    <div class="home-label">CAT VARC prep</div>
     <div class="home-title">Master<br>every<br>word.</div>
     <div class="home-btns">
       <button class="btn-p" onclick="nav('choose-game')">Start test</button>
@@ -238,7 +286,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
     <div class="sh"><div class="sh-title">Choose game</div><div class="sh-sub">Pick how you want to practice</div></div>
     <div class="game-list">
       <div class="game-row" onclick="openDiff('respell')">
-        <div class="gr-left"><div class="gr-icon">◉</div><div><div class="gr-name">Re-Spell</div><div class="gr-desc">See 5 words for 20 sec, spell from memory</div></div></div>
+        <div class="gr-left"><div class="gr-icon">◉</div><div><div class="gr-name">Re-Spell</div><div class="gr-desc">See 5 words for 20 sec, spell in any order</div></div></div>
         <div class="gr-arrow">→</div>
       </div>
       <div class="game-row" onclick="openDiff('listen')">
@@ -271,6 +319,19 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
   <div class="game-wrap" id="essay-area"></div>
 </div>
 
+<!-- LEXICON -->
+<div class="screen" id="lexicon">
+  <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
+  <div class="wrap">
+    <div class="lex-tabs">
+      <div class="lex-tab active" id="tab-mine" onclick="switchLexTab('mine')">My Words</div>
+      <div class="lex-tab" id="tab-all" onclick="switchLexTab('all')">All Words</div>
+    </div>
+    <input class="lex-search" id="lex-search" placeholder="Search words..." oninput="renderLexicon()">
+    <div id="lex-body"></div>
+  </div>
+</div>
+
 <!-- LIBRARY -->
 <div class="screen" id="library">
   <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
@@ -281,13 +342,11 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
   </div>
 </div>
 
-<!-- READ -->
 <div class="screen" id="read-article">
   <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('library')">← library</button></nav>
   <div class="wrap" id="read-content"></div>
 </div>
 
-<!-- VARC -->
 <div class="screen" id="varc">
   <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
   <div class="varc-wrap">
@@ -299,7 +358,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
   </div>
 </div>
 
-<!-- ANALYSIS -->
 <div class="screen" id="analysis">
   <nav><div class="logo">spell—it</div><button class="nav-btn" onclick="nav('home')">← home</button></nav>
   <div class="wrap">
@@ -309,7 +367,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 1
 </div>
 
 <script>
-// ── WORD BANK ─────────────────────────────────────
 const WORDS={
 easy:[
 {word:"abdicate",meaning:"to give up a position of power or responsibility"},
@@ -679,11 +736,11 @@ hard:[
 {word:"capitulation",meaning:"the action of surrendering or agreeing to terms"},
 {word:"categorical",meaning:"without exceptions or conditions; absolute"},
 {word:"censorship",meaning:"the suppression of speech or public communication"},
-{word:"chauvinism",meaning:"exaggerated patriotism; prejudiced belief in the superiority of one's own group"},
+{word:"chauvinism",meaning:"exaggerated patriotism; prejudiced belief in the superiority of one's group"},
 {word:"circumlocution",meaning:"the use of many words where fewer would do; evasive talk"},
 {word:"circumspect",meaning:"wary and unwilling to take risks; careful"},
 {word:"clemency",meaning:"mercy and leniency shown towards offenders or enemies"},
-{word:"coercion",meaning:"the practice of persuading someone to do something by using force"},
+{word:"coercion",meaning:"the practice of persuading someone to do something by force"},
 {word:"collateral",meaning:"something pledged as security; additional but secondary"},
 {word:"commensurate",meaning:"corresponding in size or degree; in proportion"},
 {word:"compunction",meaning:"a feeling of guilt or moral scruple about doing something"},
@@ -813,8 +870,8 @@ hard:[
 {word:"symbolism",meaning:"the use of symbols to represent ideas or qualities"},
 {word:"totalitarianism",meaning:"a system of government that is centralised and dictatorial"},
 {word:"transgression",meaning:"an act that goes against a law, rule, or code of conduct"},
-{word:"transparency",meaning:"openness; the condition of being transparent; absence of concealment"},
-{word:"tribalism",meaning:"behaviour and attitudes that stem from strong loyalty to one's tribe"},
+{word:"transparency",meaning:"openness; absence of concealment"},
+{word:"tribalism",meaning:"behaviour that stems from strong loyalty to one's tribe"},
 {word:"utilitarianism",meaning:"the doctrine that actions are right if they benefit the majority"},
 {word:"vehemence",meaning:"the display of strong feeling; fervour"},
 {word:"victimisation",meaning:"the action of singling someone out for cruel treatment"},
@@ -830,7 +887,6 @@ difficult:[
 {word:"adumbrate",meaning:"to report or represent in outline; to indicate faintly"},
 {word:"aestheticism",meaning:"the doctrine that beauty is the basic principle from which all others derive"},
 {word:"agglomeration",meaning:"a mass or collection of things; the process of gathering into a mass"},
-{word:"aggrandisement",meaning:"the action of increasing power, status, or wealth"},
 {word:"alienation",meaning:"the state of being isolated from a group, activity, or tradition"},
 {word:"allegory",meaning:"a story or visual image with a second distinct meaning"},
 {word:"alliteration",meaning:"the occurrence of the same letter at the beginning of adjacent words"},
@@ -851,12 +907,10 @@ difficult:[
 {word:"bifurcation",meaning:"the division of something into two branches"},
 {word:"cacophony",meaning:"a harsh discordant mixture of sounds"},
 {word:"capitalism",meaning:"an economic system based on private ownership and free markets"},
-{word:"casuistry",meaning:"the use of clever but unsound reasoning, especially in ethical matters"},
+{word:"casuistry",meaning:"the use of clever but unsound reasoning in ethical matters"},
 {word:"causality",meaning:"the relationship between cause and effect"},
 {word:"centralisation",meaning:"concentration of control of an activity under a single authority"},
-{word:"chauvinism",meaning:"exaggerated patriotism; a belief in the superiority of one's own group"},
 {word:"circumlocution",meaning:"the use of many words where fewer would suffice; verbosity"},
-{word:"clericalism",meaning:"excessive influence of the clergy in politics"},
 {word:"collectivism",meaning:"the practice of giving priority to the group over each individual"},
 {word:"colonialism",meaning:"the policy of acquiring political control over another country"},
 {word:"commodification",meaning:"the process by which something is treated as a mere commodity"},
@@ -908,7 +962,7 @@ difficult:[
 {word:"imperialism",meaning:"a policy of extending a country's power and influence through colonisation"},
 {word:"incrementalism",meaning:"a policy of making changes by small degrees"},
 {word:"indoctrination",meaning:"the process of teaching a person to accept beliefs uncritically"},
-{word:"instrumentalism",meaning:"a pragmatic philosophy in which the truth of ideas is judged by their utility"},
+{word:"instrumentalism",meaning:"a pragmatic philosophy judging ideas by their practical utility"},
 {word:"interventionism",meaning:"the policy of intervening in the affairs of another country"},
 {word:"irredentism",meaning:"the policy of advocating the restoration of territory to its parent country"},
 {word:"isolationism",meaning:"a policy of remaining apart from the political affairs of other countries"},
@@ -974,108 +1028,83 @@ difficult:[
 ]
 };
 
-// ── STATE ─────────────────────────────────────────
+const ALL_WORDS_FLAT=[];
+['easy','hard','difficult'].forEach(d=>WORDS[d].forEach(w=>ALL_WORDS_FLAT.push({...w,diff:d})));
+
+// Total library size = built-in + custom words. Recomputed live.
+function getTotalLexiconSize(){return ALL_WORDS_FLAT.length+getCustomWords().length;}
+
 let currentGame='',currentDiff='',currentWords=[];
 let rTimer=null,pendingGame='';
 let listenIdx=0,listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
-let activeList='All';
-// Track whether the diff overlay is open so back button closes it
+let activeLibList='All';
+let activeLexTab='mine';
 let diffOpen=false;
 
 const TOPICS=["Is social media making us more lonely or more connected?","Should school exams be replaced with continuous assessments?","The role of books in the age of the internet","Is ambition a virtue or a source of unhappiness?","How technology is changing the way we communicate","Should cities ban private cars to reduce pollution?","The importance of failure in achieving success","Does modern life give us enough time to think?","Is cricket more than just a sport in India?","Should voting be made compulsory for all citizens?","The value of learning a second language","Are we too dependent on our smartphones?","Should the government regulate social media platforms?","Is capitalism the best economic system we have?","Does the press have too much or too little freedom?","Is globalisation doing more harm than good?","Does democracy work better in some cultures than others?","The problem with instant gratification in modern culture","Is nationalism a force for good or a source of conflict?","Should capital punishment be abolished worldwide?"];
 
-// ── BOOT ─────────────────────────────────────────
-window.onload=()=>{
-  loadStats();renderLib();renderAnalysis();
-  // Replace state so home is always the base — never exits the site on back
-  history.replaceState({screen:'home',diff:false},'','');
-};
+// STORAGE
+function getUnlocked(){try{return JSON.parse(localStorage.getItem('si-unlocked')||'{}')}catch{return{}}}
+function setUnlocked(u){localStorage.setItem('si-unlocked',JSON.stringify(u));}
+function getCustomWords(){try{return JSON.parse(localStorage.getItem('si-custom')||'[]')}catch{return[]}}
+function setCustomWords(c){localStorage.setItem('si-custom',JSON.stringify(c));}
 
-// ── PHONE BACK BUTTON ─────────────────────────────
-window.addEventListener('popstate',e=>{
-  // If diff popup is open, close it
-  if(diffOpen){closeDiff();return;}
-  if(e.state&&e.state.screen){
-    showScreen(e.state.screen);
-  } else {
-    // Safety: if no state, go home instead of exiting
-    showScreen('home');
+function unlockWord(word,game){
+  const u=getUnlocked();
+  if(!u[word]){
+    u[word]={game,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})};
+    setUnlocked(u);updateDDBadge();
   }
-});
-
-// ── NAV ──────────────────────────────────────────
-function nav(id){
-  // Close diff popup if open before navigating
-  if(diffOpen)closeDiffSilent();
-  history.pushState({screen:id,diff:false},'','');
-  showScreen(id);
+}
+function getUnlockedCount(){return Object.keys(getUnlocked()).length;}
+function updateDDBadge(){
+  const el=document.getElementById('dd-unlock-badge');
+  if(el)el.textContent=`${getUnlockedCount()} / ${getTotalLexiconSize()}`;
 }
 
+// BOOT
+window.onload=()=>{loadStats();renderLib();renderAnalysis();updateDDBadge();history.replaceState({screen:'home',diff:false},'','');};
+window.addEventListener('popstate',e=>{
+  if(diffOpen){closeDiff();return;}
+  if(e.state&&e.state.screen)showScreen(e.state.screen);
+  else showScreen('home');
+});
+
+// NAV
+function nav(id){if(diffOpen)closeDiffSilent();history.pushState({screen:id,diff:false},'','');showScreen(id);}
 function showScreen(id){
   if(id!=='listen-game'&&'speechSynthesis' in window)window.speechSynthesis.cancel();
   if(id!=='respell-game')clearInterval(rTimer);
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const t=document.getElementById(id);
-  if(t){t.classList.add('active');window.scrollTo(0,0);}
+  const t=document.getElementById(id);if(t){t.classList.add('active');window.scrollTo(0,0);}
   closeDD();
   if(id==='library')renderLib();
   if(id==='analysis')renderAnalysis();
   if(id==='essay-game')initEssay();
+  if(id==='lexicon')renderLexicon();
 }
-
-function quitGame(){
-  // Quit goes back to choose-game, replacing game screen in history
-  history.replaceState({screen:'choose-game',diff:false},'','');
-  showScreen('choose-game');
-}
-
+function quitGame(){history.replaceState({screen:'choose-game',diff:false},'','');showScreen('choose-game');}
 function toggleDD(){document.getElementById('dd').classList.toggle('open');}
 function closeDD(){document.getElementById('dd').classList.remove('open');}
 document.addEventListener('click',e=>{if(!e.target.closest('.nav-right'))closeDD();});
+document.getElementById('diff-ov').addEventListener('click',function(e){if(e.target===this)closeDiff();});
 
-// Close diff overlay when tapping outside the popup
-document.getElementById('diff-ov').addEventListener('click',function(e){
-  if(e.target===this)closeDiff();
-});
-
-// ── DIFFICULTY POPUP ──────────────────────────────
-// Opens the diff popup AND pushes a history entry so phone back closes it
-function openDiff(game){
-  pendingGame=game;
-  diffOpen=true;
-  document.getElementById('diff-ov').classList.add('open');
-  // Push a history state representing "diff popup open"
-  history.pushState({screen:currentScreenId(),diff:true},'','');
-}
-
-function closeDiff(){
-  // Called by back button click or phone back — go back in history
-  diffOpen=false;
-  document.getElementById('diff-ov').classList.remove('open');
-  history.back();
-}
-
-function closeDiffSilent(){
-  // Close without touching history (used when navigating away programmatically)
-  diffOpen=false;
-  document.getElementById('diff-ov').classList.remove('open');
-}
-
-function currentScreenId(){
-  const active=document.querySelector('.screen.active');
-  return active?active.id:'home';
-}
+// DIFFICULTY
+function openDiff(game){pendingGame=game;diffOpen=true;document.getElementById('diff-ov').classList.add('open');history.pushState({screen:currentScreenId(),diff:true},'','');}
+function closeDiff(){diffOpen=false;document.getElementById('diff-ov').classList.remove('open');history.back();}
+function closeDiffSilent(){diffOpen=false;document.getElementById('diff-ov').classList.remove('open');}
+function currentScreenId(){const a=document.querySelector('.screen.active');return a?a.id:'home';}
 
 function startGame(diff){
-  closeDiffSilent();
-  currentDiff=diff;currentGame=pendingGame;
+  closeDiffSilent();currentDiff=diff;currentGame=pendingGame;
   currentWords=shuffle([...WORDS[diff]]).slice(0,5);
   if(!currentWords.length){showNotif('Word bank empty');return;}
-  if(currentGame==='respell')initRespell();
-  else initListen();
+  if(currentGame==='respell')initRespell();else initListen();
 }
 
-// ── RESPELL ───────────────────────────────────────
+// ── RE-SPELL ──────────────────────────────────────
+// FIX 3: Any-order matching. We collect all typed answers, then match them
+// against the pool of correct words — each word can only be claimed once.
 function initRespell(){
   nav('respell-game');
   let cd=20;
@@ -1098,35 +1127,60 @@ function initRespell(){
 
 function renderRespellType(){
   document.getElementById('respell-area').innerHTML=`
-    <div class="prog-label" style="text-align:left">spell all 5 words from memory</div>
+    <div class="prog-label" style="text-align:left;font-size:12px;color:var(--muted)">Type all 5 words in any order — each word counts once</div>
     <div class="respell-inputs" id="rp-ins"></div>
     <button class="btn-p" onclick="checkRespell()">Check answers</button>`;
   const ins=document.getElementById('rp-ins');
-  currentWords.forEach((_,i)=>{
+  for(let i=0;i<5;i++){
     const r=document.createElement('div');r.className='ri-row';
-    r.innerHTML=`<span class="ri-num">${i+1}</span><input class="ri" id="ri-${i}" placeholder="word ${i+1}" autocomplete="off" autocorrect="off" spellcheck="false">`;
+    r.innerHTML=`<span class="ri-num">${i+1}</span><input class="ri" id="ri-${i}" placeholder="any word..." autocomplete="off" autocorrect="off" spellcheck="false">`;
     ins.appendChild(r);
-  });
+  }
   document.getElementById('ri-0')?.focus();
 }
 
 function checkRespell(){
-  let ok=0,err=0,blank=0;
-  const results=currentWords.map((item,i)=>{
-    const el=document.getElementById(`ri-${i}`);if(!el)return{item,status:'blank',yours:''};
-    const v=el.value.trim().toLowerCase();
-    let status='blank';
-    if(!v){blank++;el.classList.add('err');status='blank';}
-    else if(v===item.word.toLowerCase()){ok++;el.classList.add('ok');status='ok';}
-    else{err++;el.classList.add('err');status='err';}
-    return{item,status,yours:v};
+  // Collect typed values
+  const typed=[];
+  for(let i=0;i<5;i++){
+    const el=document.getElementById(`ri-${i}`);
+    typed.push(el?el.value.trim().toLowerCase():'');
+  }
+
+  // Build a pool of correct words (mutable — each word claimed once)
+  const pool=currentWords.map(w=>w.word.toLowerCase());
+  const claimed=new Array(pool.length).fill(false);
+
+  // For each typed answer, find a matching unclaimed word
+  const results=typed.map((val,i)=>{
+    const el=document.getElementById(`ri-${i}`);
+    if(!val){if(el)el.classList.add('err');return{val,status:'blank',matched:null};}
+    // Try to claim a matching word from pool
+    const matchIdx=pool.findIndex((w,idx)=>!claimed[idx]&&w===val);
+    if(matchIdx!==-1){
+      claimed[matchIdx]=true;
+      if(el)el.classList.add('ok');
+      // Unlock the matched word
+      unlockWord(currentWords[matchIdx].word,'Re-Spell');
+      return{val,status:'ok',matched:currentWords[matchIdx]};
+    } else {
+      if(el)el.classList.add('err');
+      return{val,status:'err',matched:null};
+    }
   });
+
+  const ok=results.filter(r=>r.status==='ok').length;
+  const blank=results.filter(r=>r.status==='blank').length;
+  const err=results.filter(r=>r.status==='err').length;
+
   saveSession('Re-Spell',ok,err,blank);
   setTimeout(()=>renderRespellRes(results,ok,err,blank),500);
 }
 
 function renderRespellRes(results,ok,err,blank){
   const area=document.getElementById('respell-area');
+  const newlyUnlocked=ok;
+  // Build the full review list — show all 5 originally asked words
   area.innerHTML=`
     <div class="sh-title">Results</div>
     <div class="score-grid" style="margin-bottom:1.25rem">
@@ -1134,6 +1188,7 @@ function renderRespellRes(results,ok,err,blank){
       <div class="sc err"><div class="sc-n">${err}</div><div class="sc-l">Wrong</div></div>
       <div class="sc sk"><div class="sc-n">${blank}</div><div class="sc-l">Blank</div></div>
     </div>
+    ${newlyUnlocked>0?`<div style="background:#f0faf4;border:1px solid #9fd9b8;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--success)">+${newlyUnlocked} word${newlyUnlocked>1?'s':''} unlocked in your Lexicon</div>`:''}
     <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Tap any word to see its meaning</div>
     <div class="review-list" id="review-list"></div>
     <div class="res-btns" style="margin-top:1rem">
@@ -1141,48 +1196,42 @@ function renderRespellRes(results,ok,err,blank){
       <button class="btn-s" onclick="nav('choose-game')">Back</button>
     </div>`;
   const list=document.getElementById('review-list');
-  results.forEach((r,i)=>{
+  // Show all originally asked words with their status
+  const claimed=new Array(currentWords.length).fill(false);
+  // Re-map: for each original word, find whether it was correctly typed
+  currentWords.forEach((item,i)=>{
+    const wasCorrect=results.some(r=>r.status==='ok'&&r.matched&&r.matched.word===item.word);
+    const status=wasCorrect?'ok':'err';
     const div=document.createElement('div');div.className='review-word';
-    const statusLabel=r.status==='ok'?'correct':r.status==='blank'?'blank':'wrong';
-    const yoursHtml=r.status==='err'?`<span class="rw-you">${r.yours} →</span>`:'';
     div.innerHTML=`
       <div class="review-word-header" onclick="toggleMeaning(${i})">
-        <div class="rw-left">${yoursHtml}<span class="rw-word">${r.item.word}</span><span class="rw-status ${r.status}">${statusLabel}</span></div>
+        <div class="rw-left">
+          <span class="rw-word">${item.word}</span>
+          <span class="rw-status ${status}">${wasCorrect?'correct':'missed'}</span>
+        </div>
         <span class="rw-chevron" id="chev-${i}">▶</span>
       </div>
       <div class="review-word-body" id="rwb-${i}">
-        <div class="rw-meaning"><div class="rw-meaning-label">Meaning</div>${r.item.meaning}</div>
+        <div class="rw-meaning"><div class="rw-meaning-label">Meaning</div>${item.meaning}</div>
       </div>`;
     list.appendChild(div);
   });
 }
 
 function toggleMeaning(i){
-  const body=document.getElementById(`rwb-${i}`);
-  const chev=document.getElementById(`chev-${i}`);
-  if(!body||!chev)return;
-  const open=body.classList.toggle('open');
-  chev.classList.toggle('open',open);
+  const body=document.getElementById(`rwb-${i}`);const chev=document.getElementById(`chev-${i}`);
+  if(!body||!chev)return;const open=body.classList.toggle('open');chev.classList.toggle('open',open);
 }
 
 // ── LISTEN & SPELL ────────────────────────────────
-function initListen(){
-  nav('listen-game');
-  listenIdx=0;listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};
-  renderListenWord();
-}
-
+function initListen(){nav('listen-game');listenIdx=0;listenRes={correct:0,wrong:0,skipped:0,wrongWords:[]};renderListenWord();}
 function renderListenWord(){
-  const item=currentWords[listenIdx];
-  const isLast=listenIdx===currentWords.length-1;
+  const item=currentWords[listenIdx];const isLast=listenIdx===currentWords.length-1;
   document.getElementById('listen-area').innerHTML=`
     <div><div class="prog"><div class="prog-fill" style="width:${(listenIdx/currentWords.length)*100}%"></div></div></div>
     <div class="listen-card">
       <div class="wnum">Word ${listenIdx+1} of ${currentWords.length}</div>
-      <div class="wmean-box">
-        <div class="wmean-label">Meaning</div>
-        <div class="wmean-text">${item.meaning}</div>
-      </div>
+      <div class="wmean-box"><div class="wmean-label">Meaning</div><div class="wmean-text">${item.meaning}</div></div>
       <button class="speak-btn" onclick="speak('${item.word.replace(/'/g,"\\'")}')">▶ hear word</button>
       <input class="spell-in" id="spell-in" placeholder="type spelling..." autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="if(event.key==='Enter')submitListen()">
       <div class="listen-btns">
@@ -1191,30 +1240,19 @@ function renderListenWord(){
         <button class="btn-next" onclick="submitListen()">${isLast?'Finish':'Next →'}</button>
       </div>
     </div>`;
-  document.getElementById('spell-in')?.focus();
-  speak(item.word);
+  document.getElementById('spell-in')?.focus();speak(item.word);
 }
-
-function speak(w){
-  if('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.rate=0.85;u.lang='en-US';window.speechSynthesis.speak(u);}
-}
-
+function speak(w){if('speechSynthesis' in window){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(w);u.rate=0.85;u.lang='en-US';window.speechSynthesis.speak(u);}}
 function submitListen(){
-  const el=document.getElementById('spell-in');
-  const v=el?el.value.trim().toLowerCase():'';
+  const el=document.getElementById('spell-in');const v=el?el.value.trim().toLowerCase():'';
   const item=currentWords[listenIdx];
   if(!v){skipListen();return;}
-  if(v===item.word.toLowerCase())listenRes.correct++;
+  if(v===item.word.toLowerCase()){listenRes.correct++;unlockWord(item.word,'Listen & Spell');}
   else{listenRes.wrong++;listenRes.wrongWords.push({y:v,c:item.word,m:item.meaning});}
   nextListen();
 }
 function skipListen(){listenRes.skipped++;nextListen();}
-function nextListen(){
-  listenIdx++;
-  if(listenIdx>=currentWords.length){saveSession('Listen & Spell',listenRes.correct,listenRes.wrong,listenRes.skipped);renderListenRes();}
-  else renderListenWord();
-}
-
+function nextListen(){listenIdx++;if(listenIdx>=currentWords.length){saveSession('Listen & Spell',listenRes.correct,listenRes.wrong,listenRes.skipped);renderListenRes();}else renderListenWord();}
 function renderListenRes(){
   const {correct,wrong,skipped,wrongWords}=listenRes;
   const acc=currentWords.length>0?Math.round(correct/currentWords.length*100):0;
@@ -1222,15 +1260,7 @@ function renderListenRes(){
   const wrongHtml=wrongWords.length?`
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
       <div style="padding:10px 14px;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Review</div>
-      ${wrongWords.map(w=>`
-        <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin-bottom:4px">
-            <span style="color:var(--danger)">${w.y}</span>
-            <span style="color:var(--faint)"> → </span>
-            <span style="color:var(--success)">${w.c}</span>
-          </div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.5">${w.m}</div>
-        </div>`).join('')}
+      ${wrongWords.map(w=>`<div style="padding:10px 14px;border-bottom:1px solid var(--border)"><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;margin-bottom:4px"><span style="color:var(--danger)">${w.y}</span><span style="color:var(--faint)"> → </span><span style="color:var(--success)">${w.c}</span></div><div style="font-size:12px;color:var(--muted);line-height:1.5">${w.m}</div></div>`).join('')}
     </div>`:'';
   document.getElementById('listen-area').innerHTML=`
     <div class="sh-title">Test complete</div>
@@ -1240,11 +1270,138 @@ function renderListenRes(){
       <div class="sc sk"><div class="sc-n">${skipped}</div><div class="sc-l">Skipped</div></div>
     </div>
     <div class="acc-block"><div class="acc-n" style="color:${col(acc)}">${acc}%</div><div class="acc-l">Accuracy</div></div>
+    ${correct>0?`<div style="background:#f0faf4;border:1px solid #9fd9b8;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--success)">+${correct} word${correct>1?'s':''} unlocked in your Lexicon</div>`:''}
     ${wrongHtml}
     <div class="res-btns"><button class="btn-p" onclick="openDiff('listen')">Play again</button><button class="btn-s" onclick="nav('choose-game')">Back</button></div>`;
 }
 
-// ── ESSAY ─────────────────────────────────────────
+// ── LEXICON ───────────────────────────────────────
+function switchLexTab(tab){
+  activeLexTab=tab;
+  document.getElementById('tab-mine').classList.toggle('active',tab==='mine');
+  document.getElementById('tab-all').classList.toggle('active',tab==='all');
+  renderLexicon();
+}
+
+function renderLexicon(){
+  const query=(document.getElementById('lex-search')?.value||'').toLowerCase().trim();
+  const unlocked=getUnlocked();
+  const custom=getCustomWords();
+  const body=document.getElementById('lex-body');
+  if(!body)return;
+
+  if(activeLexTab==='mine'){
+    // My Words: unlocked built-in + all custom — NO add button here
+    const unlockedWords=ALL_WORDS_FLAT.filter(w=>unlocked[w.word]);
+    const allMine=[
+      ...unlockedWords.map(w=>({...w,source:unlocked[w.word].game,dateUnlocked:unlocked[w.word].date,custom:false})),
+      ...custom.map(w=>({...w,diff:'custom',source:'Added by you',dateUnlocked:w.date,custom:true}))
+    ].filter(w=>!query||w.word.toLowerCase().includes(query)||w.meaning.toLowerCase().includes(query))
+     .sort((a,b)=>a.word.localeCompare(b.word));
+
+    const unlockedCount=Object.keys(unlocked).length+custom.length;
+    const totalCount=getTotalLexiconSize();
+    body.innerHTML=`
+      <div class="unlock-bar">
+        <div class="unlock-bar-top">
+          <span class="unlock-bar-label">Words unlocked</span>
+          <span class="unlock-bar-num">${unlockedCount} / ${totalCount}</span>
+        </div>
+        <div class="unlock-track"><div class="unlock-fill" style="width:${Math.round((unlockedCount/totalCount)*100)}%"></div></div>
+      </div>
+      <div class="lex-header">
+        <span class="lex-count">${allMine.length} word${allMine.length!==1?'s':''}</span>
+      </div>
+      ${allMine.length===0?`<div class="empty">${query?'No words match your search.':'Spell words correctly in games to unlock them here.'}</div>`:''}
+      <div class="word-cards" id="lex-cards"></div>`;
+    const cards=document.getElementById('lex-cards');
+    allMine.forEach((w,i)=>{
+      const d=document.createElement('div');d.className='word-card';
+      d.innerHTML=`
+        <div class="word-card-head" onclick="toggleLexCard('lc-${i}','lcv-${i}')">
+          <span class="wc-word">${w.word}</span>
+          <div class="wc-right"><span class="diff-chip ${w.diff}">${w.diff}</span><span class="wc-lock">✓</span><span class="wc-chevron" id="lcv-${i}">▶</span></div>
+        </div>
+        <div class="word-card-body" id="lc-${i}">
+          <div class="wc-meaning">${w.meaning}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint);margin-top:8px">Unlocked via ${w.source}${w.dateUnlocked?' · '+w.dateUnlocked:''}</div>
+          ${w.custom?`<button class="wc-delete" onclick="deleteCustomWord('${w.word}')">Remove</button>`:''}
+        </div>`;
+      cards.appendChild(d);
+    });
+
+  } else {
+    // All Words: full built-in + custom words, PLUS the add button
+    const allWords=[
+      ...ALL_WORDS_FLAT.map(w=>({...w,custom:false})),
+      ...custom.map(w=>({...w,diff:'custom',custom:true}))
+    ].filter(w=>!query||w.word.toLowerCase().includes(query)||w.meaning.toLowerCase().includes(query))
+     .sort((a,b)=>a.word.localeCompare(b.word));
+
+    const totalCount=getTotalLexiconSize();
+    body.innerHTML=`
+      <div class="lex-header">
+        <span class="lex-count">${totalCount} total words</span>
+        <button class="lex-add-btn" onclick="openLexModal()">+ add word</button>
+      </div>
+      ${allWords.length===0?`<div class="empty">No words match your search.</div>`:''}
+      <div class="word-cards" id="lex-cards-all"></div>`;
+    const cards=document.getElementById('lex-cards-all');
+    allWords.forEach((w,i)=>{
+      const isUnlocked=!!unlocked[w.word]||w.custom;
+      const d=document.createElement('div');d.className='word-card';
+      d.innerHTML=`
+        <div class="word-card-head" onclick="toggleLexCard('la-${i}','lav-${i}')">
+          <span class="wc-word">${w.word}</span>
+          <div class="wc-right">
+            <span class="diff-chip ${w.diff}">${w.diff}</span>
+            ${isUnlocked?`<span class="wc-lock">✓</span>`:`<span class="wc-locked">○</span>`}
+            <span class="wc-chevron" id="lav-${i}">▶</span>
+          </div>
+        </div>
+        <div class="word-card-body" id="la-${i}">
+          <div class="wc-meaning">${w.meaning}</div>
+          ${isUnlocked&&!w.custom&&unlocked[w.word]?`<div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--faint);margin-top:8px">Unlocked via ${unlocked[w.word].game} · ${unlocked[w.word].date}</div>`:''}
+          ${w.custom?`<button class="wc-delete" onclick="deleteCustomWord('${w.word}')">Remove</button>`:''}
+        </div>`;
+      cards.appendChild(d);
+    });
+  }
+}
+
+function toggleLexCard(bodyId,chevId){
+  const b=document.getElementById(bodyId),c=document.getElementById(chevId);
+  if(!b||!c)return;const open=b.classList.toggle('open');c.classList.toggle('open',open);
+}
+
+function openLexModal(){document.getElementById('lex-modal').classList.add('open');}
+function closeLexModal(){
+  document.getElementById('lex-modal').classList.remove('open');
+  document.getElementById('lm-word').value='';document.getElementById('lm-meaning').value='';
+}
+function saveLexWord(){
+  const word=document.getElementById('lm-word').value.trim().toLowerCase();
+  const meaning=document.getElementById('lm-meaning').value.trim();
+  if(!word){showNotif('Enter a word');return;}
+  if(!meaning){showNotif('Enter a meaning');return;}
+  const exists=ALL_WORDS_FLAT.find(w=>w.word===word);
+  if(exists){unlockWord(word,'Added manually');closeLexModal();showNotif(`"${word}" is in the library — unlocked!`);renderLexicon();updateDDBadge();return;}
+  const custom=getCustomWords();
+  if(custom.find(w=>w.word===word)){showNotif('Word already in your lexicon');return;}
+  custom.push({word,meaning,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
+  setCustomWords(custom);
+  closeLexModal();
+  // Update the dd badge with new total
+  updateDDBadge();
+  showNotif(`"${word}" added — lexicon now ${getTotalLexiconSize()} words`);
+  renderLexicon();
+}
+function deleteCustomWord(word){
+  setCustomWords(getCustomWords().filter(w=>w.word!==word));
+  renderLexicon();updateDDBadge();showNotif('Word removed');
+}
+
+// ESSAY
 function initEssay(){
   const topics=shuffle([...TOPICS]).slice(0,3);
   document.getElementById('essay-area').innerHTML=`
@@ -1266,17 +1423,14 @@ function selectTopic(el){
 }
 function updateWC(){
   const ta=document.getElementById('essay-ta'),b=document.getElementById('wc');
-  if(!ta||!b)return;
-  const c=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;
+  if(!ta||!b)return;const c=ta.value.trim()?ta.value.trim().split(/\s+/).length:0;
   b.textContent=c+' words';b.className='wc-badge'+(c>=150?' ok':'');
 }
 function analyseEssay(){
   const ta=document.getElementById('essay-ta');if(!ta)return;
-  const text=ta.value.trim();
-  const wc=text?text.split(/\s+/).length:0;
+  const text=ta.value.trim();const wc=text?text.split(/\s+/).length:0;
   if(wc<50){showNotif('Write more before submitting');return;}
-  const errors=[];
-  const words=text.split(/\s+/);
+  const errors=[];const words=text.split(/\s+/);
   for(let i=1;i<words.length;i++)
     if(words[i].toLowerCase().replace(/[.,!?]/g,'')===words[i-1].toLowerCase().replace(/[.,!?]/g,''))
       errors.push(`Repeated word: "${words[i].replace(/[.,!?]/g,'')}"`)
@@ -1288,8 +1442,7 @@ function analyseEssay(){
   const col=v=>v>=70?'var(--success)':v>=50?'var(--warn)':'var(--danger)';
   document.getElementById('essay-area').innerHTML=`
     <div class="sh-title">Analysis</div>
-    <div class="ea">
-      <div class="ea-head">Scores</div>
+    <div class="ea"><div class="ea-head">Scores</div>
       <div class="ea-scores">
         <div class="ea-sc"><div class="ea-n" style="color:${col(sp)}">${sp}</div><div class="ea-l">Spelling</div></div>
         <div class="ea-sc"><div class="ea-n" style="color:${col(st)}">${st}</div><div class="ea-l">Structure</div></div>
@@ -1303,7 +1456,7 @@ function analyseEssay(){
   saveSession('Essay',Math.round(sp/10),errors.length,0);
 }
 
-// ── LIBRARY ───────────────────────────────────────
+// LIBRARY
 function getA(){try{return JSON.parse(localStorage.getItem('si-a')||'[]')}catch{return[]}}
 function setA(a){localStorage.setItem('si-a',JSON.stringify(a));}
 function getLists(){const a=getA();return['All',...new Set(a.map(x=>x.list||'General'))];}
@@ -1311,59 +1464,44 @@ function renderLib(){
   const articles=getA(),lists=getLists();
   const tabs=document.getElementById('ltabs'),wrap=document.getElementById('art-list-wrap');
   if(!tabs||!wrap)return;
-  tabs.innerHTML=lists.map(l=>`<button class="ltab ${l===activeList?'active':''}" onclick="switchList('${l}')">${l}</button>`).join('');
-  const filtered=activeList==='All'?articles:articles.filter(a=>(a.list||'General')===activeList);
+  tabs.innerHTML=lists.map(l=>`<button class="ltab ${l===activeLibList?'active':''}" onclick="switchLibList('${l}')">${l}</button>`).join('');
+  const filtered=activeLibList==='All'?articles:articles.filter(a=>(a.list||'General')===activeLibList);
   if(!filtered.length){wrap.innerHTML=`<div class="empty">No articles yet.<br>Tap + add to get started.</div>`;return;}
   wrap.innerHTML=`<div class="art-list">${filtered.map(a=>`<div class="art-row"><div><div class="art-title">${a.title||'Untitled'}</div><div class="art-meta">${a.list||'General'} · ${a.date||''}</div></div><div class="art-btns"><button class="art-btn rd" onclick="openArt('${a.url.replace(/'/g,"\\'")}','${(a.title||'').replace(/'/g,"\\'")}')">read</button><button class="art-btn" onclick="delArt(${a.id})">✕</button></div></div>`).join('')}</div>`;
 }
-function switchList(l){activeList=l;renderLib();}
+function switchLibList(l){activeLibList=l;renderLib();}
 function openModal(){document.getElementById('add-modal').classList.add('open');}
 function closeModal(){document.getElementById('add-modal').classList.remove('open');['m-url','m-title','m-list'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}
 function saveArticle(){
-  const url=document.getElementById('m-url').value.trim();
-  if(!url){showNotif('Enter a URL');return;}
+  const url=document.getElementById('m-url').value.trim();if(!url){showNotif('Enter a URL');return;}
   const title=document.getElementById('m-title').value.trim();
   const list=document.getElementById('m-list').value.trim()||'General';
-  const a=getA();
-  a.unshift({id:Date.now(),url,title:title||url,list,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
+  const a=getA();a.unshift({id:Date.now(),url,title:title||url,list,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})});
   setA(a);closeModal();renderLib();showNotif('Saved');
 }
 function delArt(id){setA(getA().filter(a=>a.id!==id));renderLib();}
 function openArt(url,title){
-  document.getElementById('read-content').innerHTML=`
-    <div style="margin-bottom:1.5rem">
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Article</div>
-      <div style="font-size:1.1rem;font-weight:500;line-height:1.4">${title}</div>
-    </div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Opens in a new tab.</p>
-    <button class="btn-p" style="max-width:240px" onclick="window.open('${url}','_blank')">Open article →</button>`;
+  document.getElementById('read-content').innerHTML=`<div style="margin-bottom:1.5rem"><div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Article</div><div style="font-size:1.1rem;font-weight:500;line-height:1.4">${title}</div></div><p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem">Opens in a new tab.</p><button class="btn-p" style="max-width:240px" onclick="window.open('${url}','_blank')">Open article →</button>`;
   nav('read-article');
 }
 
-// ── ANALYSIS ──────────────────────────────────────
+// ANALYSIS
 function getS(){try{return JSON.parse(localStorage.getItem('si-s')||'[]')}catch{return[]}}
 function saveSession(game,correct,wrong,skipped){
-  const s=getS();
-  s.unshift({game,correct,wrong,skipped,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'}),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});
-  localStorage.setItem('si-s',JSON.stringify(s.slice(0,50)));
-  loadStats();
+  const s=getS();s.unshift({game,correct,wrong,skipped,date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'}),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})});
+  localStorage.setItem('si-s',JSON.stringify(s.slice(0,50)));loadStats();
 }
 function loadStats(){
-  const s=getS();
-  const tc=s.reduce((a,x)=>a+(x.correct||0),0);
-  const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
+  const s=getS();const tc=s.reduce((a,x)=>a+(x.correct||0),0);const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
   const acc=(tc+tw)>0?Math.round(tc/(tc+tw)*100)+'%':'—';
   const g=id=>document.getElementById(id);
-  if(g('s-l'))g('s-l').textContent=tc;
-  if(g('s-s'))g('s-s').textContent=s.length;
-  if(g('s-a'))g('s-a').textContent=acc;
+  if(g('s-l'))g('s-l').textContent=tc;if(g('s-s'))g('s-s').textContent=s.length;if(g('s-a'))g('s-a').textContent=acc;
+  updateDDBadge();
 }
 function renderAnalysis(){
   const c=document.getElementById('analysis-content');if(!c)return;
-  const s=getS();
-  if(!s.length){c.innerHTML=`<div class="empty">Complete a few games.<br>Your history will appear here.</div>`;return;}
-  const tc=s.reduce((a,x)=>a+(x.correct||0),0);
-  const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
+  const s=getS();if(!s.length){c.innerHTML=`<div class="empty">Complete a few games.<br>Your history will appear here.</div>`;return;}
+  const tc=s.reduce((a,x)=>a+(x.correct||0),0);const tw=s.reduce((a,x)=>a+(x.wrong||0),0);
   const acc=(tc+tw)>0?Math.round(tc/(tc+tw)*100):0;
   c.innerHTML=`
     <div class="score-grid" style="margin-bottom:1.25rem">
@@ -1371,19 +1509,9 @@ function renderAnalysis(){
       <div class="sc err"><div class="sc-n">${tw}</div><div class="sc-l">Wrong</div></div>
       <div class="sc"><div class="sc-n">${acc}%</div><div class="sc-l">Accuracy</div></div>
     </div>
-    <div class="hist-list">${s.slice(0,20).map(x=>`
-      <div class="hist-row">
-        <div class="hist-top"><span class="hist-game">${x.game}</span><span class="hist-date">${x.date} ${x.time}</span></div>
-        <div class="hist-scores">
-          <span class="hs ok"><span class="hn">${x.correct}</span> correct</span>
-          <span class="hs err"><span class="hn">${x.wrong}</span> wrong</span>
-          ${x.skipped?`<span class="hs"><span class="hn">${x.skipped}</span> skipped</span>`:''}
-        </div>
-      </div>`).join('')}
-    </div>`;
+    <div class="hist-list">${s.slice(0,20).map(x=>`<div class="hist-row"><div class="hist-top"><span class="hist-game">${x.game}</span><span class="hist-date">${x.date} ${x.time}</span></div><div class="hist-scores"><span class="hs ok"><span class="hn">${x.correct}</span> correct</span><span class="hs err"><span class="hn">${x.wrong}</span> wrong</span>${x.skipped?`<span class="hs"><span class="hn">${x.skipped}</span> skipped</span>`:''}</div></div>`).join('')}</div>`;
 }
 
-// ── UTILS ─────────────────────────────────────────
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function showNotif(msg){const n=document.getElementById('notif');n.textContent=msg;n.className='notif show';setTimeout(()=>{n.className='notif';},2500);}
 </script>
